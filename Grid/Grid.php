@@ -377,7 +377,7 @@ class Grid
         //add mass actions column
         if (count($this->massActions) > 0)
         {
-            $this->columns->addColumn(new MassActionColumn($this->getHash()), 1);
+            $this->columns->addColumn($this->createMassActionColumn(), 1);
         }
 
         $primaryColumnId = $this->columns->getPrimaryColumn()->getId();
@@ -662,5 +662,10 @@ class Grid
                 return $this->container->get('templating')->renderResponse($view, $parameters, $response);
             }
         }
+    }
+
+    protected function createMassActionColumn()
+    {
+        return new MassActionColumn($this->getHash());
     }
 }
