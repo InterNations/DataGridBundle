@@ -63,7 +63,7 @@ class SelectColumn extends Column
             $markup .= ' style="width:'.$this->getSize().'px"';
         }
 
-        if ($this->values) {
+        if ($data != self::BLANK) {
             $markup .= ' class="has-value"';
         }
 
