@@ -27,6 +27,10 @@ class TextColumn extends Column
             $markup .= ' onkeypress="if (event.which == 13){this.form.submit();}"';
         }
 
+        if ($this->data) {
+            $markup .= ' class="has-value"';
+        }
+
         $markup .= '/>';
 
         return $markup;

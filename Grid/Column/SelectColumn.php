@@ -63,6 +63,10 @@ class SelectColumn extends Column
             $markup .= ' style="width:'.$this->getSize().'px"';
         }
 
+        if ($this->values) {
+            $markup .= ' class="has-value"';
+        }
+
         $markup .= '>'.$result.'</select>';
 
         return $markup;
