@@ -19,6 +19,7 @@ use Sorien\DataGridBundle\Grid\Rows;
 use Sorien\DataGridBundle\Grid\Action\MassActionInterface;
 use Sorien\DataGridBundle\Grid\Action\RowActionInterface;
 use Sorien\DataGridBundle\Grid\Column\Column;
+use Sorien\DataGridBundle\Grid\Column\SelectColumn;
 use Sorien\DataGridBundle\Grid\Column\MassActionColumn;
 use Sorien\DataGridBundle\Grid\Column\ActionsColumn;
 use Sorien\DataGridBundle\Grid\Source\Source;
