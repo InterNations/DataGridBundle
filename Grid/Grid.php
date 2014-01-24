@@ -234,7 +234,7 @@ class Grid
             }
         }
 
-        if ($this->request->get($column)) {
+        if ($fromRequest && $this->request->get($column)) {
             $columnObject = $this->getColumns()->getColumnById($column);
             if ($columnObject instanceof SelectColumn) {
                 $result = array_unique(explode(',', $this->request->get($column)));
@@ -255,9 +255,17 @@ class Grid
     {
         $storage = $this->session->get($this->getHash());
 
+	$useSession = true;
+	foreach ($this->columns as $column) {
+		if ($this->request->get($column->getId())) {
+			$useSession = false;
+			break;
+		}
+	}
+
         foreach ($this->columns as $column)
         {
-            $column->setData($this->getData($column->getId()));
+            $column->setData($this->getData($column->getId(), true, $useSession));
 
             if (($data = $column->getData()) !== null)
             {
