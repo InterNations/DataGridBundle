@@ -15,9 +15,27 @@ use Sorien\DataGridBundle\Grid\Filter;
 
 class TextColumn extends Column
 {
+    private $inputType = 'text';
+
+    public function __initialize(array $params)
+    {
+        parent::__initialize($params);
+        $this->setInputType($this->getParam('inputType', 'text'));
+    }
+
+    public function getInputType()
+    {
+        return $this->inputType;
+    }
+
+    public function setInputType($inputType)
+    {
+        $this->inputType = $inputType;
+    }
+
     public function renderFilter($gridHash)
     {
-        $markup = '<input type="text" value="'.$this->data.'" name="'.$gridHash.'['.$this->getId().']"';
+        $markup = '<input type="'.$this->inputType.'" value="'.$this->data.'" name="'.$gridHash.'['.$this->getId().']"';
 
         if ($this->getSize()) {
             $markup .= ' style="width:'.$this->getSize().'px"';
