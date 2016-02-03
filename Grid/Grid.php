@@ -12,17 +12,19 @@
 
 namespace Sorien\DataGridBundle\Grid;
 
-use Symfony\Component\HttpFoundation\RedirectResponse;
-
-use Sorien\DataGridBundle\Grid\Columns;
-use Sorien\DataGridBundle\Grid\Rows;
+use Sorien\DataGridBundle\Grid\Action\MassAction;
 use Sorien\DataGridBundle\Grid\Action\MassActionInterface;
 use Sorien\DataGridBundle\Grid\Action\RowActionInterface;
-use Sorien\DataGridBundle\Grid\Column\Column;
-use Sorien\DataGridBundle\Grid\Column\SelectColumn;
-use Sorien\DataGridBundle\Grid\Column\MassActionColumn;
 use Sorien\DataGridBundle\Grid\Column\ActionsColumn;
+use Sorien\DataGridBundle\Grid\Column\MassActionColumn;
+use Sorien\DataGridBundle\Grid\Column\SelectColumn;
 use Sorien\DataGridBundle\Grid\Source\Source;
+use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\Routing\Router;
 
 class Grid
 {
@@ -33,22 +35,22 @@ class Grid
     const REQUEST_QUERY_ORDER = '_order';
 
     /**
-     * @var \Symfony\Component\HttpFoundation\Session;
+     * @var Session
      */
     private $session;
 
     /**
-    * @var \Symfony\Component\HttpFoundation\Request
+    * @var Request
     */
     private $request;
 
     /**
-    * @var \Symfony\Component\Routing\Router
+    * @var Router
     */
     private $router;
 
     /**
-     * @var \Symfony\Component\DependencyInjection\Container
+     * @var Container
      */
     private $container;
 
@@ -73,7 +75,7 @@ class Grid
     private $hash;
 
     /**
-    * @var \Sorien\DataGridBundle\Grid\Source\Source
+    * @var Source
     */
     private $source;
 
@@ -83,17 +85,17 @@ class Grid
     private $limits;
 
     /**
-    * @var \Sorien\DataGridBundle\Grid\Columns
+    * @var Columns
     */
     private $columns;
 
     /**
-    * @var @var \Sorien\DataGridBundle\Grid\Rows
+    * @var Rows
     */
     private $rows;
 
     /**
-     * @var \Sorien\DataGridBundle\Grid\Action\MassAction[]
+     * @var MassAction[]
      */
     private $massActions;
     private $rowActions;
@@ -109,8 +111,8 @@ class Grid
     private $showTitles;
 
     /**
-     * @param \Source\Source $source Data Source
-     * @param \Symfony\Component\DependencyInjection\Container $container
+     * @param Source $source Data Source
+     * @param Container $container
      * @param string $id set if you are using more then one grid inside controller
      */
     public function __construct($container, $source = null)

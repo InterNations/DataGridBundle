@@ -22,7 +22,7 @@
             <argument type="service" id="router" />
         </service>
 
-        <service id="grid" class="%grid.base.class%" scope="prototype">
+        <service id="grid" class="%grid.base.class%" lazy="true" scope="prototype">
             <argument type="service" id="service_container" />
         </service>
         
