@@ -142,6 +142,8 @@ class Grid
         unset($this->routeParameters['_route']);
         unset($this->routeParameters['_controller']);
         unset($this->routeParameters['_route_params']);
+        unset($this->routeParameters['_template_streamable']);
+        unset($this->routeParameters['_template_default_vars']);
 
         if (!is_null($source))
         {
