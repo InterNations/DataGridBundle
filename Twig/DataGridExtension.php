@@ -104,7 +104,7 @@ class DataGridExtension extends \Twig_Extension
                     'needs_environment' => true,
                 ]
             ),
-            new \Twig_SimpleFunction('grid_url', [$this, 'getGridUrl'], ['needs_environment' => true]),
+            new \Twig_SimpleFunction('grid_url', [$this, 'getGridUrl']),
             new \Twig_SimpleFunction('grid_filter', [$this, 'getGridFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFunction(
                 'grid_cell',
