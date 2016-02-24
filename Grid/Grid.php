@@ -62,11 +62,6 @@ class Grid
     /**
      * @var string
      */
-    private $routeUrl;
-
-    /**
-     * @var string
-     */
     private $id;
 
     /**
@@ -142,6 +137,7 @@ class Grid
         unset($this->routeParameters['_route']);
         unset($this->routeParameters['_controller']);
         unset($this->routeParameters['_route_params']);
+        unset($this->routeParameters['_template']);
         unset($this->routeParameters['_template_streamable']);
         unset($this->routeParameters['_template_default_vars']);
 
@@ -480,14 +476,12 @@ class Grid
         return $this->routeParameters;
     }
 
-    public function getRouteUrl()
+    public function getRouteUrl(array $params = [])
     {
-        if ($this->routeUrl == '')
-        {
-            $this->routeUrl = $this->router->generate($this->request->get('_route'), $this->getRouteParameters());
-        }
-
-        return $this->routeUrl;
+        return $this->router->generate(
+            $this->request->get('_route'),
+            array_replace($this->getRouteParameters(), $params)
+        );
     }
 
     public function isReadyForRedirect()
