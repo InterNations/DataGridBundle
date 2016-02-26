@@ -314,7 +314,7 @@ class DataGridExtension extends \Twig_Extension
      * @param integer $page
      * @return string
      */
-    public function getGridPaginationUrl(Grid $grid, $page)
+    public function getGridPaginationUrl(Grid $grid, $page = '')
     {
         return $grid->getRouteUrl([$grid->getHash() => [Grid::REQUEST_QUERY_PAGE => $page]]);
     }
