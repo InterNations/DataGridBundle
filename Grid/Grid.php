@@ -16,6 +16,7 @@ use Sorien\DataGridBundle\Grid\Action\MassAction;
 use Sorien\DataGridBundle\Grid\Action\MassActionInterface;
 use Sorien\DataGridBundle\Grid\Action\RowActionInterface;
 use Sorien\DataGridBundle\Grid\Column\ActionsColumn;
+use Sorien\DataGridBundle\Grid\Column\Column;
 use Sorien\DataGridBundle\Grid\Column\MassActionColumn;
 use Sorien\DataGridBundle\Grid\Column\SelectColumn;
 use Sorien\DataGridBundle\Grid\Source\Source;
@@ -145,13 +146,6 @@ class Grid
         {
             $this->setSource($source);
         }
-    }
-
-    function addColumn($column, $position = 0)
-    {
-        $this->columns->addColumn($column, $position);
-
-        return $this;
     }
 
     function addMassAction(MassActionInterface $action)
@@ -383,7 +377,7 @@ class Grid
         if (count($this->rowActions) > 0)
         {
             foreach ($this->rowActions as $column => $rowActions) {
-                if ($rowAction = $this->columns->hasColumnById($column, true)) {
+                if ($rowAction = $this->columns->getColumnByIdOrNull($column)) {
                     $rowAction->setRowActions($rowActions);
                 }
                 else {
@@ -683,5 +677,14 @@ class Grid
     protected function createMassActionColumn()
     {
         return new MassActionColumn($this->getHash());
+    }
+    
+    // The good, refactored stuff beings here
+    
+    public function addColumn(Column $column, $position = 0)
+    {
+        $this->columns->addColumn($column, $position);
+
+        return $this;
     }
 }
