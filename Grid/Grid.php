@@ -678,10 +678,10 @@ class Grid
     {
         return new MassActionColumn($this->getHash());
     }
-    
+
     // The good, refactored stuff beings here
-    
-    public function addColumn(Column $column, $position = 0)
+
+    public function addColumn(Column $column, $position = null)
     {
         $this->columns->addColumn($column, $position);
 

@@ -11,7 +11,9 @@
 namespace Sorien\DataGridBundle\Tests\Grid;
 
 use InterNations\Component\Testing\AbstractTestCase;
+use InterNations\Component\Testing\AccessTrait;
 use Sorien\DataGridBundle\Grid\Column\TextColumn;
+use Sorien\DataGridBundle\Grid\Columns;
 use Sorien\DataGridBundle\Grid\Grid;
 use Sorien\DataGridBundle\Grid\Source\Source;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -22,6 +24,8 @@ use Symfony\Component\Security\Core\SecurityContextInterface;
 
 class GridTest extends AbstractTestCase
 {
+    use AccessTrait;
+
     /** @var Grid */
     private $grid;
 
@@ -70,5 +74,20 @@ class GridTest extends AbstractTestCase
         $this->assertCount(0, $this->grid->getColumns());
         $this->grid->addColumn(new TextColumn());
         $this->assertCount(1, $this->grid->getColumns());
+    }
+
+    public function testAddColumnDefaultIsNull()
+    {
+        $columns = $this->getSimpleMock(Columns::class);
+        $this->setNonPublicProperty($this->grid, 'columns', $columns);
+
+        $column = new TextColumn();
+
+        $columns
+            ->expects($this->once())
+            ->method('addColumn')
+            ->with($column, $this->identicalTo(null));
+
+        $this->grid->addColumn($column);
     }
 }
