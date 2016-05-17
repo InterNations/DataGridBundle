@@ -228,7 +228,7 @@ class Grid
             }
         }
 
-        if ($fromRequest && $this->request->get($column)) {
+        if ($fromRequest && $this->request->get($column, $this) !== $this) {
             $columnObject = $this->getColumns()->getColumnById($column);
             if ($columnObject instanceof SelectColumn) {
                 $result = array_unique(explode(',', $this->request->get($column)));
