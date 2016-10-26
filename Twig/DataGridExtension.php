@@ -11,6 +11,7 @@
 
 namespace Sorien\DataGridBundle\Twig;
 
+use Sorien\DataGridBundle\Grid\Column\Column;
 use Sorien\DataGridBundle\Grid\Grid;
 
 class DataGridExtension extends \Twig_Extension
@@ -104,7 +105,9 @@ class DataGridExtension extends \Twig_Extension
                     'needs_environment' => true,
                 ]
             ),
-            new \Twig_SimpleFunction('grid_url', [$this, 'getGridUrl'], ['needs_environment' => true]),
+            new \Twig_SimpleFunction('grid_limit_url', [$this, 'getGridLimitUrl']),
+            new \Twig_SimpleFunction('grid_pagination_url', [$this, 'getGridPaginationUrl']),
+            new \Twig_SimpleFunction('grid_sorting_url', [$this, 'getGridSortingUrl']),
             new \Twig_SimpleFunction('grid_filter', [$this, 'getGridFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFunction(
                 'grid_cell',
@@ -119,7 +122,7 @@ class DataGridExtension extends \Twig_Extension
 
     /**
      * @param \Twig_Environment $environment
-     * @param \Sorien\DataGridBundle\Grid\Grid $grid
+     * @param Grid $grid
      * @param string $theme
      * @param string $id
      * @return string
@@ -161,7 +164,7 @@ class DataGridExtension extends \Twig_Extension
      * @param \Twig_Environment $environment
      * @param \Sorien\DataGridBundle\Grid\Column\Column $column
      * @param \Sorien\DataGridBundle\Grid\Row $row
-     * @param \Sorien\DataGridBundle\Grid\Grid $grid
+     * @param Grid $grid
      *
      * @return string
      */
@@ -188,7 +191,7 @@ class DataGridExtension extends \Twig_Extension
     /**
      * @param \Twig_Environment $environment
      * @param \Sorien\DataGridBundle\Grid\Column\Column $column
-     * @param \Sorien\DataGridBundle\Grid\Grid $grid
+     * @param Grid $grid
      *
      * @return string
      */
@@ -208,35 +211,6 @@ class DataGridExtension extends \Twig_Extension
         }
 
         return $column->renderFilter($grid->getHash());
-    }
-
-    /**
-     * @param string $section
-     * @param \Sorien\DataGridBundle\Grid\Grid $grid
-     * @param \Sorien\DataGridBundle\Grid\Column\Column $param
-     * @return string
-     */
-    public function getGridUrl($section, $grid, $param = null)
-    {
-        if ($section == 'order')
-        {
-            if ($param->isSorted())
-            {
-                return $grid->getRouteUrl().'?'.$grid->getHash().'['.Grid::REQUEST_QUERY_ORDER.']='.$param->getId().'|'.($param->getOrder() == 'asc' ? 'desc' : 'asc');
-            }
-            else
-            {
-                return $grid->getRouteUrl().'?'.$grid->getHash().'['.Grid::REQUEST_QUERY_ORDER.']='.$param->getId().'|asc';
-            }
-        }
-        elseif ($section == 'page')
-        {
-            return $grid->getRouteUrl().'?'.$grid->getHash().'['.Grid::REQUEST_QUERY_PAGE.']='.$param;
-        }
-        elseif ($section == 'limit')
-        {
-            return $grid->getRouteUrl().'?'.$grid->getHash().'['.Grid::REQUEST_QUERY_LIMIT.']=';
-        }
     }
 
     /**
@@ -314,6 +288,35 @@ class DataGridExtension extends \Twig_Extension
         }
 
         return $this->templates;
+    }
+
+    // The good refactored and tested parts start here
+
+    public function getGridSortingUrl(Grid $grid, Column $column)
+    {
+        $order = 'asc';
+        if ($column->isSorted()) {
+            $order = $column->getOrder() === 'asc' ? 'desc' : 'asc';
+        }
+
+        return $grid->getRouteUrl(
+            [$grid->getHash() => [Grid::REQUEST_QUERY_ORDER => $column->getId() . '|' . $order]]
+        );
+    }
+
+    public function getGridLimitUrl(Grid $grid)
+    {
+        return $grid->getRouteUrl([$grid->getHash() => [Grid::REQUEST_QUERY_LIMIT => '']]);
+    }
+
+    /**
+     * @param Grid $grid
+     * @param integer $page
+     * @return string
+     */
+    public function getGridPaginationUrl(Grid $grid, $page = '')
+    {
+        return $grid->getRouteUrl([$grid->getHash() => [Grid::REQUEST_QUERY_PAGE => $page]]);
     }
 
     public function getName()

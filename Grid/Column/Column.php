@@ -11,8 +11,6 @@
 
 namespace Sorien\DataGridBundle\Grid\Column;
 
-use Symfony\Component\Security\Core\SecurityContextInterface;
-
 abstract class Column
 {
     const DATA_CONJUNCTION = 0;
@@ -52,11 +50,6 @@ abstract class Column
     private $isSorted = false;
     private $isDefaultSort = false;
     private $orderUrl;
-
-    /**
-     * @var \Symfony\Component\Security\Core\SecurityContextInterface
-     */
-    private $securityContext;
 
     /**
      * @todo make private
@@ -198,11 +191,6 @@ abstract class Column
      */
     public function isVisible()
     {
-        if ($this->visible && $this->securityContext !== null && $this->getRole() != null)
-        {
-            return $this->securityContext->isGranted($this->getRole());
-        }
-
         return $this->visible;
     }
 
@@ -493,15 +481,5 @@ abstract class Column
     public function getSubmitOnChange()
     {
         return $this->submitOnChange;
-    }
-
-    /**
-     * Internal function
-     *
-     * @param $securityContext
-     */
-    public function setSecurityContext(SecurityContextInterface $securityContext)
-    {
-        $this->securityContext = $securityContext;
     }
 }

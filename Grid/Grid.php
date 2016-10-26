@@ -12,17 +12,20 @@
 
 namespace Sorien\DataGridBundle\Grid;
 
-use Symfony\Component\HttpFoundation\RedirectResponse;
-
-use Sorien\DataGridBundle\Grid\Columns;
-use Sorien\DataGridBundle\Grid\Rows;
+use Sorien\DataGridBundle\Grid\Action\MassAction;
 use Sorien\DataGridBundle\Grid\Action\MassActionInterface;
 use Sorien\DataGridBundle\Grid\Action\RowActionInterface;
-use Sorien\DataGridBundle\Grid\Column\Column;
-use Sorien\DataGridBundle\Grid\Column\SelectColumn;
-use Sorien\DataGridBundle\Grid\Column\MassActionColumn;
 use Sorien\DataGridBundle\Grid\Column\ActionsColumn;
+use Sorien\DataGridBundle\Grid\Column\Column;
+use Sorien\DataGridBundle\Grid\Column\MassActionColumn;
+use Sorien\DataGridBundle\Grid\Column\SelectColumn;
 use Sorien\DataGridBundle\Grid\Source\Source;
+use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\Routing\Router;
 
 class Grid
 {
@@ -33,22 +36,22 @@ class Grid
     const REQUEST_QUERY_ORDER = '_order';
 
     /**
-     * @var \Symfony\Component\HttpFoundation\Session;
+     * @var Session
      */
     private $session;
 
     /**
-    * @var \Symfony\Component\HttpFoundation\Request
+    * @var Request
     */
     private $request;
 
     /**
-    * @var \Symfony\Component\Routing\Router
+    * @var Router
     */
     private $router;
 
     /**
-     * @var \Symfony\Component\DependencyInjection\Container
+     * @var Container
      */
     private $container;
 
@@ -56,11 +59,6 @@ class Grid
      * @var array
      */
     private $routeParameters;
-
-    /**
-     * @var string
-     */
-    private $routeUrl;
 
     /**
      * @var string
@@ -73,7 +71,7 @@ class Grid
     private $hash;
 
     /**
-    * @var \Sorien\DataGridBundle\Grid\Source\Source
+    * @var Source
     */
     private $source;
 
@@ -83,17 +81,17 @@ class Grid
     private $limits;
 
     /**
-    * @var \Sorien\DataGridBundle\Grid\Columns
+    * @var Columns
     */
     private $columns;
 
     /**
-    * @var @var \Sorien\DataGridBundle\Grid\Rows
+    * @var Rows
     */
     private $rows;
 
     /**
-     * @var \Sorien\DataGridBundle\Grid\Action\MassAction[]
+     * @var MassAction[]
      */
     private $massActions;
     private $rowActions;
@@ -109,8 +107,8 @@ class Grid
     private $showTitles;
 
     /**
-     * @param \Source\Source $source Data Source
-     * @param \Symfony\Component\DependencyInjection\Container $container
+     * @param Source $source Data Source
+     * @param Container $container
      * @param string $id set if you are using more then one grid inside controller
      */
     public function __construct($container, $source = null)
@@ -123,7 +121,7 @@ class Grid
         $this->container = $container;
 
         $this->router = $container->get('router');
-        $this->request = $container->get('request');
+        $this->request = $container->get('request_stack')->getMasterRequest();
         $this->session = $this->request->getSession();
 
         $this->id = '';
@@ -132,7 +130,7 @@ class Grid
         $this->page = 0;
         $this->showTitles = $this->showFilters = true;
 
-        $this->columns = new Columns($container->get('security.context'));
+        $this->columns = new Columns();
         $this->massActions = array();
         $this->rowActions = array();
 
@@ -140,18 +138,14 @@ class Grid
         unset($this->routeParameters['_route']);
         unset($this->routeParameters['_controller']);
         unset($this->routeParameters['_route_params']);
+        unset($this->routeParameters['_template']);
+        unset($this->routeParameters['_template_streamable']);
+        unset($this->routeParameters['_template_default_vars']);
 
         if (!is_null($source))
         {
             $this->setSource($source);
         }
-    }
-
-    function addColumn($column, $position = 0)
-    {
-        $this->columns->addColumn($column, $position);
-
-        return $this;
     }
 
     function addMassAction(MassActionInterface $action)
@@ -234,7 +228,7 @@ class Grid
             }
         }
 
-        if ($fromRequest && $this->request->get($column)) {
+        if ($fromRequest && $this->request->get($column, $this) !== $this) {
             $columnObject = $this->getColumns()->getColumnById($column);
             if ($columnObject instanceof SelectColumn) {
                 $result = array_unique(explode(',', $this->request->get($column)));
@@ -383,7 +377,7 @@ class Grid
         if (count($this->rowActions) > 0)
         {
             foreach ($this->rowActions as $column => $rowActions) {
-                if ($rowAction = $this->columns->hasColumnById($column, true)) {
+                if ($rowAction = $this->columns->getColumnByIdOrNull($column)) {
                     $rowAction->setRowActions($rowActions);
                 }
                 else {
@@ -476,14 +470,12 @@ class Grid
         return $this->routeParameters;
     }
 
-    public function getRouteUrl()
+    public function getRouteUrl(array $params = [])
     {
-        if ($this->routeUrl == '')
-        {
-            $this->routeUrl = $this->router->generate($this->request->get('_route'), $this->getRouteParameters());
-        }
-
-        return $this->routeUrl;
+        return $this->router->generate(
+            $this->request->get('_route'),
+            array_replace($this->getRouteParameters(), $params)
+        );
     }
 
     public function isReadyForRedirect()
@@ -685,5 +677,14 @@ class Grid
     protected function createMassActionColumn()
     {
         return new MassActionColumn($this->getHash());
+    }
+
+    // The good, refactored stuff beings here
+
+    public function addColumn(Column $column, $position = null)
+    {
+        $this->columns->addColumn($column, $position);
+
+        return $this;
     }
 }

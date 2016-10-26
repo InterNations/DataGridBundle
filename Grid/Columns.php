@@ -11,86 +11,21 @@
 
 namespace Sorien\DataGridBundle\Grid;
 
+use InvalidArgumentException;
 use Sorien\DataGridBundle\Grid\Column\Column;
 use Sorien\DataGridBundle\Grid\Helper\ColumnsIterator;
-use Symfony\Component\Security\Core\SecurityContextInterface;
 
 class Columns implements \IteratorAggregate, \Countable
 {
     /**
      * @var \Sorien\DataGridBundle\Grid\Column\Column[]
      */
-    private $columns;
+    private $columns = [];
     private $extensions;
-
-    /**
-     * @var \Symfony\Component\Security\Core\SecurityContextInterface
-     */
-    private $securityContext;
-
-    public function __construct(SecurityContextInterface $securityContext)
-    {
-        $this->columns = array();
-        $this->securityContext = $securityContext;
-    }
 
     public function getIterator($showOnlySourceColumns = false)
     {
         return new ColumnsIterator(new \ArrayIterator($this->columns), $showOnlySourceColumns);
-    }
-
-    /**
-     * Add column, column object have to extend Column
-     * @param Column $column
-     * @param int $position
-     * @return Grid
-     */
-    public function addColumn($column, $position = 0)
-    {
-        if (!$column instanceof Column)
-        {
-            throw new \InvalidArgumentException('Your column needs to extend class Column.');
-        }
-
-        $column->setSecurityContext($this->securityContext);
-
-        if ($position > 0)
-        {
-            $position--;
-            $head = array_slice($this->columns, 0, $position);
-            $tail = array_slice($this->columns, $position);
-            $this->columns = array_merge($head, array($column), $tail);
-        }
-        else
-        {
-            $this->columns[] = $column;
-        }
-
-        return $this;
-    }
-
-    public function getColumnById($columnId)
-    {
-        $column = $this->hasColumnById($columnId, true);
-        
-        if ($column === false) {
-            throw new \InvalidArgumentException(sprintf('Column with id "%s" doesn\'t exists', $columnId));
-        }
-
-        return $column;
-    }
-    
-    public function hasColumnById($columnId, $returnColumn = false)
-    {
-        foreach ($this->columns as $column)
-        {
-            if ($column->getId() == $columnId)
-            {
-                return $returnColumn ? $column : true;
-            }
-        }
-
-        return false;
     }
 
     public function getPrimaryColumn()
@@ -103,14 +38,8 @@ class Columns implements \IteratorAggregate, \Countable
             }
         }
 
-        throw new \InvalidArgumentException('Primary column doesn\'t exists');
+        throw new InvalidArgumentException('Primary column doesn\'t exists');
     }
-
-    public function count()
-    {
-       return count($this->columns);
-    }
-
     public function addExtension($extension)
     {
         $this->extensions[strtolower($extension->getType())] = $extension;
@@ -126,17 +55,83 @@ class Columns implements \IteratorAggregate, \Countable
         return $this->extensions[$type];
     }
 
+    // THE GOOD STUFF
+
     /**
      * Internal function
      * @return string
      */
     public function getHash()
     {
-        $hash = '';
-        foreach ($this->columns as $column)
-        {
-            $hash .= $column->getId();
+        $input = '';
+        foreach ($this->columns as $column) {
+            $input .= '__COLUMN:' . $column->getId();
         }
-        return $hash;
+
+        return hash('sha256', $input);
+    }
+
+    /**
+     * @param Column $column
+     * @param int $position
+     * @return Grid
+     */
+    public function addColumn(Column $column, $position = null)
+    {
+        if ($position !== null) {
+            $index = max(0, $position - 1);
+            $head = array_slice($this->columns, 0, $index);
+            $tail = array_slice($this->columns, $index);
+            $this->columns = array_merge($head, [$column], $tail);
+        } else {
+            $this->columns[] = $column;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string $columnId
+     * @throws InvalidArgumentException
+     * @return Column
+     */
+    public function getColumnById($columnId)
+    {
+        $column = $this->getColumnByIdOrNull($columnId);
+
+        if ($column === null) {
+            throw new InvalidArgumentException(sprintf('Column with ID "%s" does not exists', $columnId));
+        }
+
+        return $column;
+    }
+
+    /**
+     * @param string $columnId
+     * @return bool
+     */
+    public function hasColumnById($columnId)
+    {
+        return (bool) $this->getColumnByIdOrNull($columnId);
+    }
+
+    /**
+     * @param string $columnId
+     * @return Column|null
+     */
+    public function getColumnByIdOrNull($columnId)
+    {
+        foreach ($this->columns as $column) {
+            if ($column->getId() === $columnId) {
+                return $column;
+            }
+        }
+
+        return null;
+    }
+
+    public function count()
+    {
+        return count($this->columns);
     }
 }

@@ -1,2 +1,4 @@
-nbproject/
-catalog.xml
+/nbproject/
+/catalog.xml
+/vendor/
+/build/
