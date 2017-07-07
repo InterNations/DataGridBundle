@@ -28,7 +28,7 @@ class ColumnsTest extends AbstractTestCase
 
     public function setUp()
     {
-        $this->column = $this->getSimpleMock(Column::class);
+        $this->column = $this->createMock(Column::class);
         $this->column
             ->expects($this->any())
             ->method('getId')
@@ -76,7 +76,8 @@ class ColumnsTest extends AbstractTestCase
         $this->assertSame($this->column, $this->columns->getColumnById('column'));
         $this->assertSame($this->column, $this->columns->getColumnByIdOrNull('column'));
 
-        $this->setExpectedException('InvalidArgumentException', 'Column with ID "undefinedColumn" does not exist');
+        $this->expectException('InvalidArgumentException');
+        $this->expectExceptionMessage('Column with ID "undefinedColumn" does not exist');
         $this->assertSame($this->column, $this->columns->getColumnById('undefinedColumn'));
     }
 

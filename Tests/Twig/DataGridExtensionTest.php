@@ -39,9 +39,9 @@ class DataGridExtensionTest extends AbstractTestCase
 
     public function setUp()
     {
-        $this->urlGenerator = $this->getSimpleMock(UrlGeneratorInterface::class);
-        $this->environment = $this->getSimpleMock(TwigEnvironment::class);
-        $this->grid = $this->getSimpleMock(Grid::class);
+        $this->urlGenerator = $this->createMock(UrlGeneratorInterface::class);
+        $this->environment = $this->createMock(TwigEnvironment::class);
+        $this->grid = $this->createMock(Grid::class);
         $this->grid
             ->expects($this->any())
             ->method('getHash')

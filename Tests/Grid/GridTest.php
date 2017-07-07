@@ -43,17 +43,17 @@ class GridTest extends AbstractTestCase
 
     public function setUp()
     {
-        $this->session = $this->getSimpleMock(SessionInterface::class);
+        $this->session = $this->createMock(SessionInterface::class);
 
         $this->request = new Request();
         $this->request->setSession($this->session);
-        $requestStack = $this->getSimpleMock(RequestStack::class);
+        $requestStack = $this->createMock(RequestStack::class);
         $requestStack
             ->expects($this->any())
             ->method('getMasterRequest')
             ->willReturn($this->request);
 
-        $this->container = $this->getSimpleMock(ContainerInterface::class);
+        $this->container = $this->createMock(ContainerInterface::class);
         $this->container
             ->expects($this->any())
             ->method('get')
@@ -63,7 +63,7 @@ class GridTest extends AbstractTestCase
                 ]
             );
 
-        $this->source = $this->getSimpleMock(Source::class);
+        $this->source = $this->createMock(Source::class);
 
         $this->grid = new Grid($this->container, $this->source);
     }
@@ -77,7 +77,7 @@ class GridTest extends AbstractTestCase
 
     public function testAddColumnDefaultIsNull()
     {
-        $columns = $this->getSimpleMock(Columns::class);
+        $columns = $this->createMock(Columns::class);
         $this->setNonPublicProperty($this->grid, 'columns', $columns);
 
         $column = new TextColumn();
