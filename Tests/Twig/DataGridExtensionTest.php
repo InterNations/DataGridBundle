@@ -15,13 +15,15 @@ use PHPUnit_Framework_MockObject_MockObject as MockObject;
 use Sorien\DataGridBundle\Grid\Column\Column;
 use Sorien\DataGridBundle\Grid\Column\TextColumn;
 use Sorien\DataGridBundle\Grid\Grid;
+use Sorien\DataGridBundle\Grid\Row;
 use Sorien\DataGridBundle\Twig\DataGridExtension;
 use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
-use Twig_Environment as TwigEnvironment;
+use Twig\Environment;
+use Twig\Template;
 
 class DataGridExtensionTest extends AbstractTestCase
 {
@@ -30,6 +32,12 @@ class DataGridExtensionTest extends AbstractTestCase
 
     /** @var  TwigEnvironment|MockObject */
     private $environment;
+
+    /** @var Column */
+    private $column;
+
+    /** @var Row */
+    private $row;
 
     /** @var Grid|MockObject */
     private $grid;
@@ -40,12 +48,10 @@ class DataGridExtensionTest extends AbstractTestCase
     public function setUp()
     {
         $this->urlGenerator = $this->createMock(UrlGeneratorInterface::class);
-        $this->environment = $this->createMock(TwigEnvironment::class);
-        $this->grid = $this->createMock(Grid::class);
-        $this->grid
-            ->expects($this->any())
-            ->method('getHash')
-            ->willReturn('hash');
+        $this->environment = $this->createMock(Environment::class);
+        $this->grid = $this->createConfiguredMock(Grid::class, ['getHash' => 'hash', 'getId' => 'ID']);
+        $this->column = new TextColumn();
+        $this->row = new Row();
 
         $routes = new RouteCollection();
         $routes->add('grid', new Route('/grid'));
@@ -95,10 +101,10 @@ class DataGridExtensionTest extends AbstractTestCase
 
     public function testGetPaginationUrlWithEmptyPage()
     {
-        $this->mockGridGetRouteUrl(['hash' => ['_page' => '']]);
+        $this->mockGridGetRouteUrl(['hash' => ['_page' => null]]);
 
         $this->assertSame(
-            'http://localhost/grid?hash[_page]=',
+            'http://localhost/grid',
             urldecode($this->extension->getGridPaginationUrl($this->grid))
         );
     }
@@ -110,6 +116,97 @@ class DataGridExtensionTest extends AbstractTestCase
         $this->assertSame(
             'http://localhost/grid?hash[_limit]=',
             urldecode($this->extension->getGridLimitUrl($this->grid))
+        );
+    }
+
+    public function testGetGridCellWithCustomBlock()
+    {
+        $template = $this->createMock(Template::class);
+        $template
+            ->method('hasBlock')
+            ->willReturnMap(
+                [
+                    ['grid_ID_column_test_cell', null, [], false],
+                    ['grid_column_test_cell', null, [], true]
+                ]
+            );
+        $template
+            ->expects($this->once())
+            ->method('renderBlock')
+            ->with(
+                'grid_column_test_cell',
+                ['grid' => $this->grid, 'column' => $this->column, 'value' => 'value', 'row' => $this->row]
+            )
+            ->willReturn('rendered');
+
+        $this->environment
+            ->expects($this->once())
+            ->method('loadTemplate')
+            ->with(DataGridExtension::DEFAULT_TEMPLATE)
+            ->willReturn($template);
+
+        $this->row->setField('test', 'value');
+        $this->column->setId('test');
+
+        $this->assertSame(
+            'rendered',
+            $this->extension->getGridCell($this->environment, $this->column, $this->row, $this->grid)
+        );
+    }
+
+    public function testGetGridCellWithThemeBlock(): void
+    {
+        $template = $this->createMock(Template::class);
+        $template
+            ->method('hasBlock')
+            ->willReturnMap(
+                [
+                    ['grid_ID_column_test_cell', null, [], true],
+                ]
+            );
+        $template
+            ->expects($this->once())
+            ->method('renderBlock')
+            ->with(
+                'grid_ID_column_test_cell',
+                ['grid' => $this->grid, 'column' => $this->column, 'value' => 'value', 'row' => $this->row]
+            )
+            ->willReturn('rendered');
+
+        $this->environment
+            ->expects($this->once())
+            ->method('loadTemplate')
+            ->with(DataGridExtension::DEFAULT_TEMPLATE)
+            ->willReturn($template);
+
+        $this->row->setField('test', 'value');
+        $this->column->setId('test');
+
+        $this->assertSame(
+            'rendered',
+            $this->extension->getGridCell($this->environment, $this->column, $this->row, $this->grid)
+        );
+    }
+
+    public function testGetGridCellDefault(): void
+    {
+        $template = $this->createMock(Template::class);
+        $template
+            ->method('hasBlock')
+            ->willReturn(false);
+
+        $this->environment
+            ->expects($this->once())
+            ->method('loadTemplate')
+            ->with(DataGridExtension::DEFAULT_TEMPLATE)
+            ->willReturn($template);
+
+        $this->row->setField('test', 'value');
+        $this->column->setId('test');
+
+        $this->assertSame(
+            'value',
+            $this->extension->getGridCell($this->environment, $this->column, $this->row, $this->grid)
         );
     }
 

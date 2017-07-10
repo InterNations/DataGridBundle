@@ -11,42 +11,30 @@
 
 namespace Sorien\DataGridBundle\Twig;
 
+use InvalidArgumentException;
 use Sorien\DataGridBundle\Grid\Column\Column;
 use Sorien\DataGridBundle\Grid\Grid;
+use Sorien\DataGridBundle\Grid\Row;
+use Symfony\Component\Routing\Generator\UrlGenerator;
+use Twig_Environment as Environment;
+use Twig\Template;
+use Twig\TwigFunction;
+use Twig\Extension\AbstractExtension;
 
-class DataGridExtension extends \Twig_Extension
+class DataGridExtension extends AbstractExtension
 {
     const DEFAULT_TEMPLATE = 'SorienDataGridBundle::blocks.html.twig';
 
-    /**
-     * @var \Twig_Environment
-     */
-    protected $environment;
+    /** @var Template[] */
+    private $templates = [];
 
-    /**
-     * @var \Twig_TemplateInterface[]
-     */
-    protected $templates;
+    /** @var string */
+    private $theme;
 
-    /**
-     * @var string
-     */
-    protected $theme;
+    /* @var UrlGenerator */
+    private $router;
 
-    /**
-    * @var \Symfony\Component\Routing\Router
-    */
-    protected $router;
-
-    /**
-     * @var string[]
-     */
-    protected $names;
-
-    /**
-     * @param \Symfony\Component\Routing\Router $router
-     */
-    public function __construct($router)
+    public function __construct(UrlGenerator $router)
     {
         $this->router = $router;
     }
@@ -54,196 +42,177 @@ class DataGridExtension extends \Twig_Extension
     /**
      * @return array
      */
-    public function getFunctions()
+    public function getFunctions(): array
     {
-        return array(
-            new \Twig_SimpleFunction(
+        return [
+            new TwigFunction(
                 'grid',
                 [$this, 'getGrid'],
                 [
-                    'is_safe'           => ['html'],
+                    'is_safe' => ['html'],
                     'needs_environment' => true,
                 ]
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'grid_titles',
                 [$this, 'getGridTitles'],
                 [
-                    'is_safe'           => ['html'],
+                    'is_safe' => ['html'],
                     'needs_environment' => true,
                 ]
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'grid_filters',
                 [$this, 'getGridFilters'],
                 [
-                    'is_safe'           => ['html'],
+                    'is_safe' => ['html'],
                     'needs_environment' => true,
                 ]
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'grid_rows',
                 [$this, 'getGridItems'],
                 [
-                    'is_safe'           => ['html'],
+                    'is_safe' => ['html'],
                     'needs_environment' => true,
                 ]
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'grid_pager',
                 [$this, 'getGridPager'],
                 [
-                    'is_safe'           => ['html'],
+                    'is_safe' => ['html'],
                     'needs_environment' => true,
                 ]
             ),
-            new \Twig_SimpleFunction(
+            new TwigFunction(
                 'grid_actions',
                 [$this, 'getGridActions'],
                 [
-                    'is_safe'           => ['html'],
+                    'is_safe' => ['html'],
                     'needs_environment' => true,
                 ]
             ),
-            new \Twig_SimpleFunction('grid_limit_url', [$this, 'getGridLimitUrl']),
-            new \Twig_SimpleFunction('grid_pagination_url', [$this, 'getGridPaginationUrl']),
-            new \Twig_SimpleFunction('grid_sorting_url', [$this, 'getGridSortingUrl']),
-            new \Twig_SimpleFunction('grid_filter', [$this, 'getGridFilter'], ['needs_environment' => true]),
-            new \Twig_SimpleFunction(
+            new TwigFunction('grid_limit_url', [$this, 'getGridLimitUrl']),
+            new TwigFunction('grid_pagination_url', [$this, 'getGridPaginationUrl']),
+            new TwigFunction('grid_sorting_url', [$this, 'getGridSortingUrl']),
+            new TwigFunction('grid_filter', [$this, 'getGridFilter'], ['needs_environment' => true]),
+            new TwigFunction(
                 'grid_cell',
                 [$this, 'getGridCell'],
                 [
-                    'is_safe'           => ['html'],
-                    'needs_environment' => true
+                    'is_safe' => ['html'],
+                    'needs_environment' => true,
                 ]
             ),
-        );
+        ];
     }
 
     /**
-     * @param \Twig_Environment $environment
+     * @param Environment $environment
      * @param Grid $grid
      * @param string $theme
      * @param string $id
      * @return string
      */
-    public function getGrid(\Twig_Environment $environment, $grid, $theme = null, $id = '')
+    public function getGrid(Environment $environment, $grid, $theme = null)
     {
         $this->theme = $theme;
-        $this->names[$grid->getHash()] = $id == '' ? $grid->getId() : $id;
 
         return $this->renderBlock($environment, 'grid', array('grid' => $grid->prepare()));
     }
 
-    public function getGridTitles(\Twig_Environment $environment, $grid)
+    private static function getGridId(Grid $grid): string
+    {
+        return $grid->getId() ?: '';
+    }
+
+    public function getGridTitles(Environment $environment, $grid)
     {
         return $this->renderBlock($environment, 'grid_titles', array('grid' => $grid));
     }
 
-    public function getGridFilters(\Twig_Environment $environment, $grid)
+    public function getGridFilters(Environment $environment, $grid)
     {
         return $this->renderBlock($environment, 'grid_filters', array('grid' => $grid));
     }
 
-    public function getGridItems(\Twig_Environment $environment, $grid)
+    public function getGridItems(Environment $environment, $grid)
     {
         return $this->renderBlock($environment, 'grid_rows', array('grid' => $grid));
     }
 
-    public function getGridPager(\Twig_Environment $environment, $grid)
+    public function getGridPager(Environment $environment, $grid)
     {
         return $this->renderBlock($environment, 'grid_pager', array('grid' => $grid));
     }
 
-    public function getGridActions(\Twig_Environment $environment, $grid)
+    public function getGridActions(Environment $environment, $grid)
     {
         return $this->renderBlock($environment, 'grid_actions', array('grid' => $grid));
     }
 
-    /**
-     * @param \Twig_Environment $environment
-     * @param \Sorien\DataGridBundle\Grid\Column\Column $column
-     * @param \Sorien\DataGridBundle\Grid\Row $row
-     * @param Grid $grid
-     *
-     * @return string
-     */
-    public function getGridCell(\Twig_Environment $environment, $column, $row, $grid)
+    public function getGridCell(Environment $environment, Column $column, Row $row, Grid $grid): string
     {
         $value = $column->renderCell($row->getField($column->getId()), $row, $this->router);
 
-        if (($id = $this->names[$grid->getHash()]) != '')
-        {
-            if ($this->hasBlock($environment, $block = 'grid_'.$id.'_column_'.$column->getId().'_cell'))
-            {
-                return $this->renderBlock($environment, $block, array('column' => $column, 'value' => $value, 'row' => $row));
+        $id = self::getGridId($grid);
+        if ($id !== '') {
+            if ($this->hasBlock($environment, $block = 'grid_' . $id . '_column_' . $column->getId() . '_cell')) {
+                return $this->renderBlock(
+                    $environment,
+                    $block,
+                    ['grid' => $grid, 'column' => $column, 'value' => $value, 'row' => $row]
+                );
             }
         }
 
-        if ($this->hasBlock($environment, $block = 'grid_column_'.$column->getId().'_cell'))
-        {
-            return $this->renderBlock($environment, $block, array('column' => $column, 'value' => $value, 'row' => $row));
+        $block = 'grid_column_' . $column->getId() . '_cell';
+        if ($this->hasBlock($environment, $block)) {
+            return $this->renderBlock(
+                $environment,
+                $block,
+                ['grid' => $grid, 'column' => $column, 'value' => $value, 'row' => $row]
+            );
         }
 
         return $value;
     }
 
-    /**
-     * @param \Twig_Environment $environment
-     * @param \Sorien\DataGridBundle\Grid\Column\Column $column
-     * @param Grid $grid
-     *
-     * @return string
-     */
-    public function getGridFilter(\Twig_Environment $environment, $column, $grid)
+    public function getGridFilter(Environment $environment, Column $column, Grid $grid): string
     {
-        if (($id = $this->names[$grid->getHash()]) != '')
-        {
-            if ($this->hasBlock($environment, $block = 'grid_'.$id.'_column_'.$column->getId().'_filter'))
-            {
-                return $this->renderBlock($environment, $block, array('column' => $column, 'hash' => $grid->getHash()));
+        $id = self::getGridId($grid);
+
+        if ($id !== '') {
+            if ($this->hasBlock($environment, $block = 'grid_' . $id . '_column_' . $column->getId() . '_filter')) {
+                return $this->renderBlock($environment, $block, ['column' => $column, 'hash' => $grid->getHash()]);
             }
         }
 
-        if ($this->hasBlock($environment, $block = 'grid_column_'.$column->getId().'_filter'))
-        {
+        if ($this->hasBlock($environment, $block = 'grid_column_' . $column->getId() . '_filter')) {
             return $this->renderBlock($environment, $block, array('column' => $column, 'hash' => $grid->getHash()));
         }
 
         return $column->renderFilter($grid->getHash());
     }
 
-    /**
-     * @param \Twig_Environment $environment
-     * @param $name string
-     * @param $parameters string
-     * @return string
-     */
-    private function renderBlock(\Twig_Environment $environment, $name, $parameters)
+    private function renderBlock(Environment $environment, string $name, array $parameters): string
     {
-        foreach ($this->getTemplates($environment) as $template)
-        {
-            if ($template->hasBlock($name))
-            {
-                $rendered = $template->renderBlock($name, $parameters);
-                return $rendered;
+        foreach ($this->getTemplates($environment) as $template) {
+            if ($template->hasBlock($name)) {
+                return $template->renderBlock($name, $parameters);
             }
         }
 
-        throw new \InvalidArgumentException(sprintf('Block "%s" doesn\'t exist in grid template "%s".', $name, $this->theme));
+        throw new InvalidArgumentException(
+            sprintf('Block "%s" doesn’t exist in grid template "%s".', $name, $this->theme)
+        );
     }
 
-    /**
-     * @param \Twig_Environment $environment
-     * @param $name string
-     * @return boolean
-     */
-    private function hasBlock(\Twig_Environment $environment, $name)
+    private function hasBlock(Environment $environment, string $name): bool
     {
-        foreach ($this->getTemplates($environment) as $template)
-        {
-            if ($template->hasBlock($name))
-            {
+        foreach ($this->getTemplates($environment) as $template) {
+            if ($template->hasBlock($name)) {
                 return true;
             }
         }
@@ -251,38 +220,25 @@ class DataGridExtension extends \Twig_Extension
         return false;
     }
 
-    /**
-     * @param \Twig_Environment $environment
-     * @return \Twig_TemplateInterface[]
-     * @throws \Exception
-     */
-    private function getTemplates(\Twig_Environment $environment)
+    /** @return Template[] */
+    private function getTemplates(Environment $environment): array
     {
-        if (empty($this->templates))
-        {
+        if (empty($this->templates)) {
             //get template name
-            if ($this->theme instanceof \Twig_Template)
-            {
+            if ($this->theme instanceof Template) {
                 $this->templates[] = $this->theme;
                 $this->templates[] = $environment->loadTemplate($this::DEFAULT_TEMPLATE);
-            }
-            elseif (is_string($this->theme))
-            {
+            } elseif (is_string($this->theme)) {
                 $template = $environment->loadTemplate($this->theme);
-                while ($template != null)
-                {
+                while ($template !== null) {
                     $this->templates[] = $template;
-                    $template = $template->getParent(array());
+                    $template = $template->getParent([]);
                 }
 
                 $this->templates[] = $environment->loadTemplate($this->theme);
-            }
-            elseif (is_null($this->theme))
-            {
+            } elseif ($this->theme === null) {
                 $this->templates[] = $environment->loadTemplate($this::DEFAULT_TEMPLATE);
-            }
-            else
-            {
+            } else {
                 throw new \Exception('Unable to load template');
             }
         }
@@ -292,7 +248,7 @@ class DataGridExtension extends \Twig_Extension
 
     // The good refactored and tested parts start here
 
-    public function getGridSortingUrl(Grid $grid, Column $column)
+    public function getGridSortingUrl(Grid $grid, Column $column): string
     {
         $order = 'asc';
         if ($column->isSorted()) {
@@ -304,23 +260,13 @@ class DataGridExtension extends \Twig_Extension
         );
     }
 
-    public function getGridLimitUrl(Grid $grid)
+    public function getGridLimitUrl(Grid $grid): string
     {
         return $grid->getRouteUrl([$grid->getHash() => [Grid::REQUEST_QUERY_LIMIT => '']]);
     }
 
-    /**
-     * @param Grid $grid
-     * @param integer $page
-     * @return string
-     */
-    public function getGridPaginationUrl(Grid $grid, $page = '')
+    public function getGridPaginationUrl(Grid $grid, int $page = null): string
     {
         return $grid->getRouteUrl([$grid->getHash() => [Grid::REQUEST_QUERY_PAGE => $page]]);
-    }
-
-    public function getName()
-    {
-        return 'datagrid_twig_extension';
     }
 }
