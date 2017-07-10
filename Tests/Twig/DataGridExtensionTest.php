@@ -30,7 +30,7 @@ class DataGridExtensionTest extends AbstractTestCase
     /** @var UrlGeneratorInterface|MockObject */
     private $urlGenerator;
 
-    /** @var  TwigEnvironment|MockObject */
+    /** @var Environment|MockObject */
     private $environment;
 
     /** @var Column */

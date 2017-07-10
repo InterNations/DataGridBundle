@@ -15,7 +15,7 @@ use InvalidArgumentException;
 use Sorien\DataGridBundle\Grid\Column\Column;
 use Sorien\DataGridBundle\Grid\Grid;
 use Sorien\DataGridBundle\Grid\Row;
-use Symfony\Component\Routing\Generator\UrlGenerator;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig_Environment as Environment;
 use Twig\Template;
 use Twig\TwigFunction;
@@ -31,12 +31,12 @@ class DataGridExtension extends AbstractExtension
     /** @var string */
     private $theme;
 
-    /* @var UrlGenerator */
-    private $router;
+    /* @var UrlGeneratorInterface */
+    private $urlGenerator;
 
-    public function __construct(UrlGenerator $router)
+    public function __construct(UrlGeneratorInterface $urlGenerator)
     {
-        $this->router = $router;
+        $this->urlGenerator = $urlGenerator;
     }
 
     /**
@@ -154,7 +154,7 @@ class DataGridExtension extends AbstractExtension
 
     public function getGridCell(Environment $environment, Column $column, Row $row, Grid $grid): string
     {
-        $value = $column->renderCell($row->getField($column->getId()), $row, $this->router);
+        $value = $column->renderCell($row->getField($column->getId()), $row, $this->urlGenerator);
 
         $id = self::getGridId($grid);
         if ($id !== '') {
