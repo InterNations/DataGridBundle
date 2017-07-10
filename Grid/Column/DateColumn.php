@@ -23,7 +23,7 @@ class DateColumn extends TextColumn
         $this->format = $this->getParam('format', 'Y-m-d H:i:s');
     }
 
-    public function renderFilter($gridHash)
+    public function renderFilter(string $gridHash): string
     {
         return '';
     }
@@ -49,7 +49,7 @@ class DateColumn extends TextColumn
             return '';
         }
     }
-    
+
     public function getType()
     {
         return 'date';

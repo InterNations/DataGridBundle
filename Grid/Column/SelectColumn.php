@@ -32,7 +32,7 @@ class SelectColumn extends Column
         $this->multiple = $this->getParam('multiple', false);
     }
 
-    public function renderFilter($gridHash)
+    public function renderFilter(string $gridHash): string
     {
         $result = '<option value="'.$this::BLANK.'"></option>';
 

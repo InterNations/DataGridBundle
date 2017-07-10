@@ -33,7 +33,7 @@ class RangeColumn extends Column
         $this->inputType = $inputType;
     }
 
-    public function renderFilter($gridHash)
+    public function renderFilter(string $gridHash): string
     {
         $result = '<div class="range-column-filter">';
         $result .= '<input class="';

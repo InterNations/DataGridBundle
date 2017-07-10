@@ -62,11 +62,13 @@ class ActionsColumn extends Column
         return $return;
     }
 
-    public function renderFilter($gridHash)
+    public function renderFilter(string $gridHash): string
     {
-        if (!$this->getSubmitOnChange()) {
-            return '<input name="'.$gridHash.'[submit]" type="submit" value="Filter"/>';
+        if ($this->getSubmitOnChange()) {
+            return '';
         }
+
+        return '<input name="'.$gridHash.'[submit]" type="submit" value="Filter"/>';
     }
 
     public function setRowActions(array $rowActions) {

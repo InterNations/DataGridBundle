@@ -23,7 +23,7 @@ class MassActionColumn extends Column
         parent::__construct(array('id' => self::ID, 'title' => '', 'size' => 15, 'sortable' => false, 'source' => false, 'align' => 'center'));
     }
 
-    public function renderFilter($gridHash)
+    public function renderFilter(string $gridHash): string
     {
         return '<input type="checkbox" class="grid-mass-selector" onclick="'.$gridHash.'_mark_visible(this.checked); return true;"/>';
     }

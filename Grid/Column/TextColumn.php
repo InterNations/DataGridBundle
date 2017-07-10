@@ -33,7 +33,7 @@ class TextColumn extends Column
         $this->inputType = $inputType;
     }
 
-    public function renderFilter($gridHash)
+    public function renderFilter(string $gridHash): string
     {
         $markup = '<input type="'.$this->inputType.'" value="'.$this->data.'" name="'.$gridHash.'['.$this->getId().']"';
 

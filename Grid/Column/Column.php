@@ -93,14 +93,7 @@ abstract class Column
         return isset($this->params[$id]) ? $this->params[$id] : $default;
     }
 
-    /**
-     * Draw filter
-     *
-     * @todo probably make function as abstract
-     * @param string $gridHash
-     * @return string
-     */
-    public function renderFilter($gridHash)
+    public function renderFilter(string $gridHash): string
     {
         return '';
     }
