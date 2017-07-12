@@ -210,6 +210,24 @@ class DataGridExtensionTest extends AbstractTestCase
         );
     }
 
+    public function testGetGridCellWithNullValue(): void
+    {
+        $template = $this->createMock(Template::class);
+        $template
+            ->method('hasBlock')
+            ->willReturn(false);
+
+        $this->environment
+            ->expects($this->once())
+            ->method('loadTemplate')
+            ->with(DataGridExtension::DEFAULT_TEMPLATE)
+            ->willReturn($template);
+
+        $this->column->setCallback(function () { return null; });
+
+        $this->assertNull($this->extension->getGridCell($this->environment, $this->column, $this->row, $this->grid));
+    }
+
     private function mockGridGetRouteUrl(array $expectedParams)
     {
         $this->grid

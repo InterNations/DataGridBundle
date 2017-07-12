@@ -152,7 +152,7 @@ class DataGridExtension extends AbstractExtension
         return $this->renderBlock($environment, 'grid_actions', array('grid' => $grid));
     }
 
-    public function getGridCell(Environment $environment, Column $column, Row $row, Grid $grid): string
+    public function getGridCell(Environment $environment, Column $column, Row $row, Grid $grid): ?string
     {
         $value = $column->renderCell($row->getField($column->getId()), $row, $this->urlGenerator);
 
