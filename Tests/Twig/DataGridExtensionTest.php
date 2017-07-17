@@ -91,7 +91,7 @@ class DataGridExtensionTest extends AbstractTestCase
 
     public function testGetPaginationUrl()
     {
-        $this->mockGridGetRouteUrl(['hash' => ['_page' => 2]]);
+        $this->mockGridGetRouteUrl(['hash' => ['_page' => '2']]);
 
         $this->assertSame(
             'http://localhost/grid?hash[_page]=2',
@@ -101,10 +101,10 @@ class DataGridExtensionTest extends AbstractTestCase
 
     public function testGetPaginationUrlWithEmptyPage()
     {
-        $this->mockGridGetRouteUrl(['hash' => ['_page' => null]]);
+        $this->mockGridGetRouteUrl(['hash' => ['_page' => '']]);
 
         $this->assertSame(
-            'http://localhost/grid',
+            'http://localhost/grid?hash[_page]=',
             urldecode($this->extension->getGridPaginationUrl($this->grid))
         );
     }

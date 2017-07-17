@@ -267,6 +267,6 @@ class DataGridExtension extends AbstractExtension
 
     public function getGridPaginationUrl(Grid $grid, int $page = null): string
     {
-        return $grid->getRouteUrl([$grid->getHash() => [Grid::REQUEST_QUERY_PAGE => $page]]);
+        return $grid->getRouteUrl([$grid->getHash() => [Grid::REQUEST_QUERY_PAGE => (string) $page]]);
     }
 }
