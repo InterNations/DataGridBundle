@@ -238,6 +238,7 @@ class DataGridExtension extends AbstractExtension
                 }
 
                 $this->templates[] = $environment->loadTemplate($this->theme);
+                $this->templates[] = $environment->loadTemplate($this::DEFAULT_TEMPLATE);
             } elseif ($this->theme === null) {
                 $this->templates[] = $environment->loadTemplate($this::DEFAULT_TEMPLATE);
             } else {
