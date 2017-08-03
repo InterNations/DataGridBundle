@@ -21,6 +21,7 @@ use PHPUnit_Framework_MockObject_MockObject as MockObject;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class GridTest extends AbstractTestCase
 {
@@ -41,17 +42,26 @@ class GridTest extends AbstractTestCase
     /** @var Source|MockObject */
     private $source;
 
+    /** @var UrlGeneratorInterface|MockObject */
+    private $urlGenerator;
+
+    /** @var string */
+    private $route = 'grid_route';
+
     public function setUp()
     {
         $this->session = $this->createMock(SessionInterface::class);
 
         $this->request = new Request();
+        $this->request->attributes->set('_route', $this->route);
         $this->request->setSession($this->session);
         $requestStack = $this->createMock(RequestStack::class);
         $requestStack
             ->expects($this->any())
             ->method('getMasterRequest')
             ->willReturn($this->request);
+
+        $this->urlGenerator = $this->createMock(UrlGeneratorInterface::class);
 
         $this->container = $this->createMock(ContainerInterface::class);
         $this->container
@@ -60,6 +70,7 @@ class GridTest extends AbstractTestCase
             ->willReturnMap(
                 [
                     ['request_stack', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $requestStack],
+                    ['router', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $this->urlGenerator]
                 ]
             );
 

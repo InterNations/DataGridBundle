@@ -45,6 +45,9 @@ class DataGridExtensionTest extends AbstractTestCase
     /** @var DataGridExtension */
     private $extension;
 
+    /** @var array */
+    private $context = ['ctxt1' => 'ctxt1'];
+
     public function setUp()
     {
         $this->urlGenerator = $this->createMock(UrlGeneratorInterface::class);
@@ -126,8 +129,8 @@ class DataGridExtensionTest extends AbstractTestCase
             ->method('hasBlock')
             ->willReturnMap(
                 [
-                    ['grid_ID_column_test_cell', null, [], false],
-                    ['grid_column_test_cell', null, [], true]
+                    ['grid_ID_column_test_cell', $this->context, [], false],
+                    ['grid_column_test_cell', $this->context, [], true]
                 ]
             );
         $template
@@ -136,6 +139,7 @@ class DataGridExtensionTest extends AbstractTestCase
             ->with(
                 'grid_column_test_cell',
                 ['grid' => $this->grid, 'column' => $this->column, 'value' => 'value', 'row' => $this->row]
+                + $this->context
             )
             ->willReturn('rendered');
 
@@ -150,7 +154,7 @@ class DataGridExtensionTest extends AbstractTestCase
 
         $this->assertSame(
             'rendered',
-            $this->extension->getGridCell($this->environment, $this->column, $this->row, $this->grid)
+            $this->extension->getGridCell($this->environment, $this->context, $this->column, $this->row, $this->grid)
         );
     }
 
@@ -161,7 +165,7 @@ class DataGridExtensionTest extends AbstractTestCase
             ->method('hasBlock')
             ->willReturnMap(
                 [
-                    ['grid_ID_column_test_cell', null, [], true],
+                    ['grid_ID_column_test_cell', $this->context, [], true],
                 ]
             );
         $template
@@ -170,6 +174,7 @@ class DataGridExtensionTest extends AbstractTestCase
             ->with(
                 'grid_ID_column_test_cell',
                 ['grid' => $this->grid, 'column' => $this->column, 'value' => 'value', 'row' => $this->row]
+                + $this->context
             )
             ->willReturn('rendered');
 
@@ -184,7 +189,7 @@ class DataGridExtensionTest extends AbstractTestCase
 
         $this->assertSame(
             'rendered',
-            $this->extension->getGridCell($this->environment, $this->column, $this->row, $this->grid)
+            $this->extension->getGridCell($this->environment, $this->context, $this->column, $this->row, $this->grid)
         );
     }
 
@@ -206,7 +211,7 @@ class DataGridExtensionTest extends AbstractTestCase
 
         $this->assertSame(
             'value',
-            $this->extension->getGridCell($this->environment, $this->column, $this->row, $this->grid)
+            $this->extension->getGridCell($this->environment, $this->context, $this->column, $this->row, $this->grid)
         );
     }
 
@@ -225,7 +230,7 @@ class DataGridExtensionTest extends AbstractTestCase
 
         $this->column->setCallback(function () { return null; });
 
-        $this->assertNull($this->extension->getGridCell($this->environment, $this->column, $this->row, $this->grid));
+        $this->assertNull($this->extension->getGridCell($this->environment, $this->context, $this->column, $this->row, $this->grid));
     }
 
     private function mockGridGetRouteUrl(array $expectedParams)

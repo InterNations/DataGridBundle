@@ -51,6 +51,7 @@ class DataGridExtension extends AbstractExtension
                 [
                     'is_safe' => ['html'],
                     'needs_environment' => true,
+                    'needs_context' => true,
                 ]
             ),
             new TwigFunction(
@@ -59,6 +60,7 @@ class DataGridExtension extends AbstractExtension
                 [
                     'is_safe' => ['html'],
                     'needs_environment' => true,
+                    'needs_context' => true,
                 ]
             ),
             new TwigFunction(
@@ -67,6 +69,7 @@ class DataGridExtension extends AbstractExtension
                 [
                     'is_safe' => ['html'],
                     'needs_environment' => true,
+                    'needs_context' => true,
                 ]
             ),
             new TwigFunction(
@@ -75,6 +78,7 @@ class DataGridExtension extends AbstractExtension
                 [
                     'is_safe' => ['html'],
                     'needs_environment' => true,
+                    'needs_context' => true,
                 ]
             ),
             new TwigFunction(
@@ -83,6 +87,7 @@ class DataGridExtension extends AbstractExtension
                 [
                     'is_safe' => ['html'],
                     'needs_environment' => true,
+                    'needs_context' => true,
                 ]
             ),
             new TwigFunction(
@@ -91,6 +96,7 @@ class DataGridExtension extends AbstractExtension
                 [
                     'is_safe' => ['html'],
                     'needs_environment' => true,
+                    'needs_context' => true,
                 ]
             ),
             new TwigFunction('grid_limit_url', [$this, 'getGridLimitUrl']),
@@ -108,18 +114,11 @@ class DataGridExtension extends AbstractExtension
         ];
     }
 
-    /**
-     * @param Environment $environment
-     * @param Grid $grid
-     * @param string $theme
-     * @param string $id
-     * @return string
-     */
-    public function getGrid(Environment $environment, $grid, $theme = null)
+    public function getGrid(Environment $environment, array $context, Grid $grid, ?string $theme = null): string
     {
         $this->theme = $theme;
 
-        return $this->renderBlock($environment, 'grid', array('grid' => $grid->prepare()));
+        return $this->renderBlock($environment, $context, 'grid', ['grid' => $grid->prepare()]);
     }
 
     private static function getGridId(Grid $grid): string
@@ -127,40 +126,41 @@ class DataGridExtension extends AbstractExtension
         return $grid->getId() ?: '';
     }
 
-    public function getGridTitles(Environment $environment, $grid)
+    public function getGridTitles(Environment $environment, array $context, $grid)
     {
-        return $this->renderBlock($environment, 'grid_titles', array('grid' => $grid));
+        return $this->renderBlock($environment, $context, 'grid_titles', array('grid' => $grid));
     }
 
-    public function getGridFilters(Environment $environment, $grid)
+    public function getGridFilters(Environment $environment, array $context, $grid)
     {
-        return $this->renderBlock($environment, 'grid_filters', array('grid' => $grid));
+        return $this->renderBlock($environment, $context, 'grid_filters', array('grid' => $grid));
     }
 
-    public function getGridItems(Environment $environment, $grid)
+    public function getGridItems(Environment $environment, array $context, Grid $grid): string
     {
-        return $this->renderBlock($environment, 'grid_rows', array('grid' => $grid));
+        return $this->renderBlock($environment, $context, 'grid_rows', array('grid' => $grid));
     }
 
-    public function getGridPager(Environment $environment, $grid)
+    public function getGridPager(Environment $environment, array $context, Grid $grid): string
     {
-        return $this->renderBlock($environment, 'grid_pager', array('grid' => $grid));
+        return $this->renderBlock($environment, $context, 'grid_pager', array('grid' => $grid));
     }
 
-    public function getGridActions(Environment $environment, $grid)
+    public function getGridActions(Environment $environment, array $context, Grid $grid): string
     {
-        return $this->renderBlock($environment, 'grid_actions', array('grid' => $grid));
+        return $this->renderBlock($environment, $context, 'grid_actions', array('grid' => $grid));
     }
 
-    public function getGridCell(Environment $environment, Column $column, Row $row, Grid $grid): ?string
+    public function getGridCell(Environment $environment, array $context, Column $column, Row $row, Grid $grid): ?string
     {
         $value = $column->renderCell($row->getField($column->getId()), $row, $this->urlGenerator);
 
         $id = self::getGridId($grid);
         if ($id !== '') {
-            if ($this->hasBlock($environment, $block = 'grid_' . $id . '_column_' . $column->getId() . '_cell')) {
+            if ($this->hasBlock($environment, $context, $block = 'grid_' . $id . '_column_' . $column->getId() . '_cell')) {
                 return $this->renderBlock(
                     $environment,
+                    $context,
                     $block,
                     ['grid' => $grid, 'column' => $column, 'value' => $value, 'row' => $row]
                 );
@@ -168,9 +168,10 @@ class DataGridExtension extends AbstractExtension
         }
 
         $block = 'grid_column_' . $column->getId() . '_cell';
-        if ($this->hasBlock($environment, $block)) {
+        if ($this->hasBlock($environment, $context, $block)) {
             return $this->renderBlock(
                 $environment,
+                $context,
                 $block,
                 ['grid' => $grid, 'column' => $column, 'value' => $value, 'row' => $row]
             );
@@ -179,28 +180,28 @@ class DataGridExtension extends AbstractExtension
         return $value;
     }
 
-    public function getGridFilter(Environment $environment, Column $column, Grid $grid): string
+    public function getGridFilter(Environment $environment, array $context, Column $column, Grid $grid): string
     {
         $id = self::getGridId($grid);
 
         if ($id !== '') {
-            if ($this->hasBlock($environment, $block = 'grid_' . $id . '_column_' . $column->getId() . '_filter')) {
-                return $this->renderBlock($environment, $block, ['column' => $column, 'hash' => $grid->getHash()]);
+            if ($this->hasBlock($environment, $context, $block = 'grid_' . $id . '_column_' . $column->getId() . '_filter')) {
+                return $this->renderBlock($environment, $context, $block, ['column' => $column, 'hash' => $grid->getHash()]);
             }
         }
 
-        if ($this->hasBlock($environment, $block = 'grid_column_' . $column->getId() . '_filter')) {
-            return $this->renderBlock($environment, $block, array('column' => $column, 'hash' => $grid->getHash()));
+        if ($this->hasBlock($environment, $context, $block = 'grid_column_' . $column->getId() . '_filter')) {
+            return $this->renderBlock($environment, $context, $block, array('column' => $column, 'hash' => $grid->getHash()));
         }
 
         return $column->renderFilter($grid->getHash());
     }
 
-    private function renderBlock(Environment $environment, string $name, array $parameters): string
+    private function renderBlock(Environment $environment, array $context, string $name, array $parameters): string
     {
         foreach ($this->getTemplates($environment) as $template) {
-            if ($template->hasBlock($name)) {
-                return $template->renderBlock($name, $parameters);
+            if ($template->hasBlock($name, $context)) {
+                return $template->renderBlock($name, array_merge($context, $parameters));
             }
         }
 
@@ -209,10 +210,10 @@ class DataGridExtension extends AbstractExtension
         );
     }
 
-    private function hasBlock(Environment $environment, string $name): bool
+    private function hasBlock(Environment $environment, array $context, string $name): bool
     {
         foreach ($this->getTemplates($environment) as $template) {
-            if ($template->hasBlock($name)) {
+            if ($template->hasBlock($name, $context)) {
                 return true;
             }
         }
