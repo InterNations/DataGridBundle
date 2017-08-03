@@ -102,19 +102,20 @@ class DataGridExtension extends AbstractExtension
             new TwigFunction('grid_limit_url', [$this, 'getGridLimitUrl']),
             new TwigFunction('grid_pagination_url', [$this, 'getGridPaginationUrl']),
             new TwigFunction('grid_sorting_url', [$this, 'getGridSortingUrl']),
-            new TwigFunction('grid_filter', [$this, 'getGridFilter'], ['needs_environment' => true]),
+            new TwigFunction(
+                'grid_filter',
+                [$this, 'getGridFilter'],
+                ['needs_environment' => true, 'needs_context' => true]
+            ),
             new TwigFunction(
                 'grid_cell',
                 [$this, 'getGridCell'],
-                [
-                    'is_safe' => ['html'],
-                    'needs_environment' => true,
-                ]
+                ['is_safe' => ['html'], 'needs_environment' => true, 'needs_context' => true]
             ),
         ];
     }
 
-    public function getGrid(Environment $environment, array $context, Grid $grid, ?string $theme = null): string
+    public function getGrid(Environment $environment, array $context, Grid $grid, $theme = null): string
     {
         $this->theme = $theme;
 
@@ -231,7 +232,7 @@ class DataGridExtension extends AbstractExtension
                 $this->templates[] = $environment->loadTemplate($this::DEFAULT_TEMPLATE);
             } elseif (is_string($this->theme)) {
                 $template = $environment->loadTemplate($this->theme);
-                while ($template !== null) {
+                while ($template instanceof Template) {
                     $this->templates[] = $template;
                     $template = $template->getParent([]);
                 }
