@@ -178,7 +178,7 @@ class DataGridExtension extends AbstractExtension
             );
         }
 
-        return $value;
+        return twig_escape_filter($environment, $value);
     }
 
     public function getGridFilter(Environment $environment, array $context, Column $column, Grid $grid): string

@@ -48,7 +48,7 @@
     <tr class="grid-row-filters">
     {% for column in grid.columns %}
         {% if (column.visible)%}
-        <th>{% if column.filterable %}{{ grid_filter(column, grid)|raw }}{% endif %}</th>
+        <th>{% if column.filterable %}{{ grid_filter(column, grid) }}{% endif %}</th>
         {% endif %}
     {% endfor %}
     </tr>
@@ -60,7 +60,7 @@
     <tr{% if row.color != '' %} style="background-color:{{row.color}};"{% endif %} class="grid-row-cells">
     {% for column in grid.columns %}
         {% if (column.visible )%}
-            <td class="grid-column-{{ column.id }}{% if column.align != 'left'%} align-{{column.align}}{% endif %}">{{ grid_cell(column, row, grid)|raw }}</td>
+            <td class="grid-column-{{ column.id }}{% if column.align != 'left'%} align-{{column.align}}{% endif %}">{{ grid_cell(column, row, grid) }}</td>
         {% endif %}
     {% endfor %}
     {% endspaceless %}
@@ -73,7 +73,7 @@
     {{ 'Page'|trans }}
     {% spaceless %}
     <input type="button" class="prev" {% if grid.page <= 0 %}disabled="disabled"{% endif %} value="<" onclick="window.location.href='{{grid_pagination_url(grid, grid.page-1)}}';return false;"/>
-    <input type="text" value="{{grid.page+1}}" size="2" onkeypress="if (event.which == 13){window.location.href='{{grid_pagination_url(grid)}}'+(parseInt(this.value)-1);return false}"/>
+    <input type="text" value="{{grid.page+1}}" size="2" onkeypress="if (event.which === 13){window.location.href='{{grid_pagination_url(grid)}}'+(parseInt(this.value)-1);return false}"/>
     <input type="button" value=">" class="next" {% if grid.page >= grid.pagecount-1 %}disabled="disabled"{% endif %} onclick="window.location.href='{{grid_pagination_url(grid, grid.page+1)}}';return false;"/> {{ 'of %count%'|trans({'%count%': grid.pagecount}) }}
     {% endspaceless %}
     {{ ', Display'|trans }}
