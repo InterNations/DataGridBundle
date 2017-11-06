@@ -23,6 +23,7 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Twig\Environment;
+use Twig\Extension\CoreExtension;
 use Twig\Template;
 
 class DataGridExtensionTest extends AbstractTestCase
@@ -50,6 +51,9 @@ class DataGridExtensionTest extends AbstractTestCase
 
     public function setUp()
     {
+        // Trigger autoload
+        new CoreExtension();
+
         $this->urlGenerator = $this->createMock(UrlGeneratorInterface::class);
         $this->environment = $this->createMock(Environment::class);
         $this->grid = $this->createConfiguredMock(Grid::class, ['getHash' => 'hash', 'getId' => 'ID']);
