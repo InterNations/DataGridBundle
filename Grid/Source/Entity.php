@@ -160,6 +160,7 @@ class Entity extends Source
 
         $where = $this->query->expr()->andx();
 
+        $parameterIndex = 0;
         $sorted = false;
         foreach ($columns as $column)
         {
@@ -177,7 +178,7 @@ class Entity extends Source
 
             if ($column->isFiltered())
             {
-                if($column->getFiltersConnection() == column::DATA_CONJUNCTION)
+                if($column->getFiltersConnection() === Column::DATA_CONJUNCTION)
                 {
                     foreach ($column->getFilters() as $filter)
                     {
@@ -185,11 +186,15 @@ class Entity extends Source
 
                         $where->add($this->query->expr()->$operator(
                             $this->getFieldName($column, false),
-                            $this->normalizeValue($filter->getOperator(), $filter->getValue())
+                            '?' . $parameterIndex
                         ));
+
+                        $parameter = trim($this->normalizeValue($filter->getOperator(), $filter->getValue()), '\'');
+
+                        $this->query->setParameter($parameterIndex++, $parameter);
                     }
                 }
-                elseif($column->getFiltersConnection() == column::DATA_DISJUNCTION)
+                elseif($column->getFiltersConnection() === Column::DATA_DISJUNCTION)
                 {
                     $sub = $this->query->expr()->orx();
 
@@ -198,9 +203,13 @@ class Entity extends Source
                         $operator = $this->normalizeOperator($filter->getOperator());
 
                         $sub->add($this->query->expr()->$operator(
-                              $this->getFieldName($column, false),
-                              $this->normalizeValue($filter->getOperator(), $filter->getValue())
+                            $this->getFieldName($column, false),
+                            '?' . $parameterIndex
                         ));
+
+                        $parameter = trim($this->normalizeValue($filter->getOperator(), $filter->getValue()), '\'');
+
+                        $this->query->setParameter($parameterIndex++, $parameter);
                     }
                     $where->add($sub);
                 }
@@ -225,7 +234,6 @@ class Entity extends Source
 
         //call overridden prepareQuery or associated closure
         $query = $this->prepareQuery(clone $this->query);
-
         $items = $query->getQuery()->getResult();
 
         // hydrate result
@@ -235,9 +243,14 @@ class Entity extends Source
         {
             $row = new Row();
 
-            foreach ($item as $key => $value)
-            {
-               $row->setField($key, $value);
+            foreach ($item as $key => $value) {
+                $row->setField($key, $value);
+            }
+
+            foreach ($columns as $column) {
+                if (isset($item[$column->getField()])) {
+                    $row->setField($column->getId(), $item[$column->getField()]);
+                }
             }
 
             //call overridden prepareRow or associated closure

@@ -12,6 +12,7 @@
 namespace Sorien\DataGridBundle\Grid\Column;
 
 use Sorien\DataGridBundle\Grid\Filter;
+use Twig\Markup;
 
 class SelectColumn extends Column
 {
@@ -69,7 +70,7 @@ class SelectColumn extends Column
 
         $markup .= '>'.$result.'</select>';
 
-        return $markup;
+        return new Markup($markup, 'UTF-8');
     }
 
     public function setData($data)

@@ -19,7 +19,10 @@
     },
     "require-dev": {
         "internations/testing-component": ">=1",
-        "phpunit/phpunit": ">4"
+        "phpunit/phpunit": ">4",
+        "symfony/symfony": "^3.3",
+        "doctrine/doctrine-bundle": "^1.7",
+        "doctrine/orm": "^2.5"
     },
     "autoload": {
         "psr-0": { "Sorien\\DataGridBundle": "" }

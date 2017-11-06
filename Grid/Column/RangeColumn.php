@@ -12,6 +12,7 @@
 namespace Sorien\DataGridBundle\Grid\Column;
 
 use Sorien\DataGridBundle\Grid\Filter;
+use Twig\Markup;
 
 class RangeColumn extends Column
 {
@@ -33,7 +34,7 @@ class RangeColumn extends Column
         $this->inputType = $inputType;
     }
 
-    public function renderFilter(string $gridHash): string
+    public function renderFilter(string $gridHash)
     {
         $result = '<div class="range-column-filter">';
         $result .= '<input class="';
@@ -42,7 +43,7 @@ class RangeColumn extends Column
             $result .= 'has-value ';
         }
 
-        $result .= 'first-filter" placeholder="From:" type="'.$this->inputType.'" value="'.$this->data['from'].'" name="'.$gridHash.'['.$this->getId().'][from]"';
+        $result .= 'first-filter" placeholder="From:" type="'.$this->inputType.'" value="'.$this->escape($this->data['from']).'" name="'.$gridHash.'['.$this->getId().'][from]"';
 
         $keypressHandler = 'onkeypress="if (event.which == 13){this.form.submit();}"';
         if ($this->getSubmitOnChange()) {
@@ -60,7 +61,7 @@ class RangeColumn extends Column
             $result .= 'has-value ';
         }
 
-        $result .= 'second-filter" placeholder="To:" type="'.$this->inputType.'" value="'.$this->data['to'].'" name="'.$gridHash.'['.$this->getId().'][to]"';
+        $result .= 'second-filter" placeholder="To:" type="'.$this->inputType.'" value="'.$this->escape($this->data['to']).'" name="'.$gridHash.'['.$this->getId().'][to]"';
 
         if ($this->getSubmitOnChange()) {
             $result .=  $keypressHandler;
@@ -72,7 +73,8 @@ class RangeColumn extends Column
 
         $result .= '/>';
         $result .= '</div>';
-        return $result;
+
+        return new Markup($result, 'UTF-8');
     }
 
     public function getFilters()

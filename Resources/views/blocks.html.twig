@@ -132,7 +132,7 @@ function {{ grid.hash }}_mark_visible(select)
     var counter = 0;
 
     for (var i=0; i < form.elements.length; i++ ) {
-        if (form.elements[i].type == 'checkbox') {
+        if (form.elements[i].type === 'checkbox') {
             form.elements[i].checked = select;
 
             if (form.elements[i].checked){

@@ -105,7 +105,7 @@ class DataGridExtension extends AbstractExtension
             new TwigFunction(
                 'grid_filter',
                 [$this, 'getGridFilter'],
-                ['needs_environment' => true, 'needs_context' => true]
+                ['is_safe' => ['html'], 'needs_environment' => true, 'needs_context' => true]
             ),
             new TwigFunction(
                 'grid_cell',
@@ -152,7 +152,7 @@ class DataGridExtension extends AbstractExtension
         return $this->renderBlock($environment, $context, 'grid_actions', array('grid' => $grid));
     }
 
-    public function getGridCell(Environment $environment, array $context, Column $column, Row $row, Grid $grid): ?string
+    public function getGridCell(Environment $environment, array $context, Column $column, Row $row, Grid $grid)
     {
         $value = $column->renderCell($row->getField($column->getId()), $row, $this->urlGenerator);
 
@@ -178,7 +178,7 @@ class DataGridExtension extends AbstractExtension
             );
         }
 
-        return twig_escape_filter($environment, $value);
+        return twig_escape_filter($environment, $value, 'html', null, true);
     }
 
     public function getGridFilter(Environment $environment, array $context, Column $column, Grid $grid): string

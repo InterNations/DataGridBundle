@@ -11,6 +11,8 @@
 
 namespace Sorien\DataGridBundle\Grid\Column;
 
+use Twig\Markup;
+
 class MassActionColumn extends Column
 {
     const ID = '__action';
@@ -30,6 +32,14 @@ class MassActionColumn extends Column
 
     public function renderCell($value, $row, $router)
     {
-        return '<input type="checkbox" class="action" value="1" name="'.$this->gridHash.'['.self::ID.']['.$row->getPrimaryFieldValue().']"/>';
+        return new Markup(
+            sprintf(
+                '<input type="checkbox" class="action" value="1" name="%s[%s][%s]"/>',
+                $this->gridHash,
+                self::ID,
+                $row->getPrimaryFieldValue()
+            ),
+            'UTF-8'
+        );
     }
 }

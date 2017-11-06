@@ -93,7 +93,7 @@ abstract class Column
         return isset($this->params[$id]) ? $this->params[$id] : $default;
     }
 
-    public function renderFilter(string $gridHash): string
+    public function renderFilter(string $gridHash)
     {
         return '';
     }
@@ -474,5 +474,10 @@ abstract class Column
     public function getSubmitOnChange()
     {
         return $this->submitOnChange;
+    }
+
+    protected function escape(?string $string): string
+    {
+        return htmlentities($string, ENT_QUOTES, 'UTF-8');
     }
 }

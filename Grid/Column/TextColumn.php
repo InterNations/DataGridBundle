@@ -12,6 +12,7 @@
 namespace Sorien\DataGridBundle\Grid\Column;
 
 use Sorien\DataGridBundle\Grid\Filter;
+use Twig\Markup;
 
 class TextColumn extends Column
 {
@@ -33,16 +34,22 @@ class TextColumn extends Column
         $this->inputType = $inputType;
     }
 
-    public function renderFilter(string $gridHash): string
+    public function renderFilter(string $gridHash)
     {
-        $markup = '<input type="'.$this->inputType.'" value="'.$this->data.'" name="'.$gridHash.'['.$this->getId().']"';
+        $markup = sprintf(
+            '<input type="%s" value="%s" name="%s[%s]"',
+            $this->inputType,
+            $this->escape($this->data),
+            $gridHash,
+            $this->getId()
+        );
 
         if ($this->getSize()) {
             $markup .= ' style="width:'.$this->getSize().'px"';
         }
 
         if ($this->getSubmitOnChange()) {
-            $markup .= ' onkeypress="if (event.which == 13){this.form.submit();}"';
+            $markup .= ' onkeypress="if (event.which === 13){this.form.submit();}"';
         }
 
         if ($this->data) {
@@ -51,7 +58,7 @@ class TextColumn extends Column
 
         $markup .= '/>';
 
-        return $markup;
+        return new Markup($markup, 'UTF-8');
     }
 
     public function getFilters()

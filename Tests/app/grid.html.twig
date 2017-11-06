@@ -1,0 +1,36 @@
+<style>
+    .grid {
+        font-family: sans-serif;
+    }
+
+    .grid table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .grid td, .grid th {
+        padding: .3rem;
+    }
+
+    .grid td {
+        width: 5%;
+        border: 1px solid lightgrey;
+    }
+
+    .grid th {
+        border: 1px solid darkgrey;
+        background: #e1e1e1;
+    }
+
+    .grid .pager {
+        padding: 1rem;
+        border: 1px solid lightgrey;
+    }
+
+</style>
+
+{% block grid_column_str_value_template_cell %}
+    <span style="background:lightgreen">{{ value }}</span>
+{% endblock %}
+
+{{ grid(grid, _self) }}

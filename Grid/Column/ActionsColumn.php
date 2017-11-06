@@ -12,6 +12,7 @@
 namespace Sorien\DataGridBundle\Grid\Column;
 
 use Sorien\DataGridBundle\Grid\Action\RowAction;
+use Twig\Markup;
 
 class ActionsColumn extends Column
 {
@@ -59,7 +60,7 @@ class ActionsColumn extends Column
             $return .=">".$action->getTitle()."</a> ";
         }
 
-        return $return;
+        return new Markup($return, 'UTF-8');
     }
 
     public function renderFilter(string $gridHash): string
@@ -68,7 +69,7 @@ class ActionsColumn extends Column
             return '';
         }
 
-        return '<input name="'.$gridHash.'[submit]" type="submit" value="Filter"/>';
+        return new Markup(sprintf('<input name="%s[submit]" type="submit" value="Filter"/>', $gridHash), 'UTF-8');
     }
 
     public function setRowActions(array $rowActions) {
