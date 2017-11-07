@@ -16,18 +16,16 @@ class MassAction implements MassActionInterface
     private $title;
     private $callback;
     private $confirm;
-    private $parameters = array();
+    private $parameters = [];
     private $group;
-    
-    /**
-     * Default MassAction constructor
-     *
-     * @param string $title Title of the mass action
-     * @param string $callback Callback of the mass action
-     * @param boolean $confirm Show confirm message if true
-     * @return \Sorien\DataGridBundle\Grid\Action\MassAction
-     */
-    public function __construct($title, $callback = null, $confirm = false, array $parameters = array(), $group = null)
+
+    public function __construct(
+        string $title,
+        $callback = null,
+        bool $confirm = false,
+        array $parameters = [],
+        $group = null
+    )
     {
         $this->title = $title;
         $this->callback = $callback;
@@ -36,101 +34,62 @@ class MassAction implements MassActionInterface
         $this->group = $group;
     }
 
-    /**
-     * Set action title
-     *
-     * @param $title
-     * @return \Sorien\DataGridBundle\Grid\Action\MassAction
-     */
-    public function setTitle($title)
+    public function setTitle(string $title): self
     {
         $this->title = $title;
 
         return $this;
     }
 
-    /**
-     * get action title
-     *
-     * @return string
-     */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->title;
     }
 
-    /**
-     * Set action callback
-     *
-     * @param  $callback
-     * @return \Sorien\DataGridBundle\Grid\Action\MassAction
-     */
-    public function setCallback($callback)
+    public function setCallback($callback): self
     {
         $this->callback = $callback;
 
         return $this;
     }
 
-    /**
-     * get action callback
-     *
-     * @return string
-     */
     public function getCallback()
     {
         return $this->callback;
     }
 
-    /**
-     * Set action confirm
-     *
-     * @param  $confirm
-     * @return \Sorien\DataGridBundle\Grid\Action\MassAction
-     */
-    public function setConfirm($confirm)
+    public function setConfirm(bool $confirm): self
     {
         $this->confirm = $confirm;
 
         return $this;
     }
 
-    /**
-     * get action confirm
-     *
-     * @return boolean
-     */
-    public function getConfirm()
+    public function getConfirm(): bool
     {
         return $this->confirm;
     }
 
-    /**
-     * Set action/controller parameters
-     *
-     * @param array $parameters
-     */
-    public function setParameters(array $parameters)
+    public function setParameters(array $parameters): self
     {
         $this->parameters = $parameters;
 
         return $this;
     }
 
-    /**
-     * @return array
-     */
-    public function getParameters()
+    public function getParameters(): array
     {
         return $this->parameters;
     }
 
-    public function setGroup($group)
+    public function setGroup(string $group): self
     {
         $this->group = $group;
+
+        return $this;
     }
 
-    public function getGroup()
+    public function getGroup(): ?string
     {
         return $this->group;
     }

@@ -13,24 +13,7 @@ namespace Sorien\DataGridBundle\Grid\Action;
 
 interface MassActionInterface
 {
-    /**
-     * get action title
-     *
-     * @return string
-     */
-    public function getTitle();
-
-    /**
-     * get action callback
-     *
-     * @return string
-     */
+    public function getTitle(): string;
     public function getCallback();
-
-    /**
-     * get action confirm
-     *
-     * @return boolean
-     */
-    public function getConfirm();
+    public function getConfirm(): bool;
 }

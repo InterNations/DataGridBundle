@@ -11,10 +11,13 @@
 
 namespace Sorien\DataGridBundle\Grid\Source;
 
-use Sorien\DataGridBundle\Grid\Column;
-use Sorien\DataGridBundle\Grid\Mapping\Driver\DriverInterface;
+use Psr\Container\ContainerInterface;
+use Sorien\DataGridBundle\Grid\Columns;
+use Sorien\DataGridBundle\Grid\Helper\ColumnsIterator;
+use Sorien\DataGridBundle\Grid\Row;
+use Sorien\DataGridBundle\Grid\Rows;
 
-abstract class Source implements DriverInterface
+abstract class Source
 {
     const EVENT_PREPARE = 0;
     const EVENT_PREPARE_QUERY = 1;
@@ -23,118 +26,59 @@ abstract class Source implements DriverInterface
 
     private $callbacks;
 
-    /**
-     * @param \Doctrine\ODM\MongoDB\Query\Builder $queryBuilder
-     * @return \Doctrine\ODM\MongoDB\Query\Builder
-     */
     public function prepareQuery($queryBuilder)
     {
-        if (isset($this->callbacks[$this::EVENT_PREPARE_QUERY]) && is_callable($this->callbacks[$this::EVENT_PREPARE_QUERY]))
-        {
+        if (is_callable($this->callbacks[$this::EVENT_PREPARE_QUERY] ?? null)) {
             return call_user_func($this->callbacks[$this::EVENT_PREPARE_QUERY], $queryBuilder);
         }
+
         return $queryBuilder;
     }
 
-    /**
-     * @param \Doctrine\ODM\MongoDB\Query\Builder $queryBuilder
-     * @return \Doctrine\ODM\MongoDB\Query\Builder
-     */
     public function prepareCountQuery($queryBuilder)
     {
-        if (isset($this->callbacks[$this::EVENT_PREPARE_COUNT_QUERY]) && is_callable($this->callbacks[$this::EVENT_PREPARE_COUNT_QUERY]))
-        {
+        if (is_callable($this->callbacks[$this::EVENT_PREPARE_COUNT_QUERY] ?? null)) {
             return call_user_func($this->callbacks[$this::EVENT_PREPARE_COUNT_QUERY], $queryBuilder);
         }
+
         return $queryBuilder;
     }
 
-    /**
-     * @param \Sorien\DataGridBundle\Grid\Row $row
-     * @return \Sorien\DataGridBundle\Grid\Row|null
-     */
-    public function prepareRow($row)
+    public function prepareRow(Row $row): ?Row
     {
-        if (isset($this->callbacks[$this::EVENT_PREPARE_ROW]) && is_callable($this->callbacks[$this::EVENT_PREPARE_ROW]))
-        {
+        if (is_callable($this->callbacks[$this::EVENT_PREPARE_ROW] ?? null)) {
             return call_user_func($this->callbacks[$this::EVENT_PREPARE_ROW], $row);
         }
 
         return $row;
     }
 
-    /**
-     * @param int $type Source::EVENT_PREPARE*
-     * @param \Closure $callback
-     */
-    public function setCallback($type, $callback)
+    public function setCallback(string $type, callable $callback): void
     {
         $this->callbacks[$type] = $callback;
     }
 
-    /**
-     * Find data for current page
-     *
-     * @abstract
-     * @param \Sorien\DataGridBundle\Grid\Column\Column[] $columns
-     * @param int $page
-     * @param int $limit
-     * @return \Sorien\DataGridBundle\DataGrid\Rows
-     */
-    abstract public function execute($columns, $page = 0, $limit = 0);
+    abstract public function execute(ColumnsIterator $columns, int $page = 0, int $limit = 0): Rows;
 
-    /**
-     * Get Total count of data items
-     *
-     * @param \Sorien\DataGridBundle\Grid\Column\Columns $columns
-     * @return int
-     */
-    abstract function getTotalCount($columns);
+    abstract public function getTotalCount(Columns $columns): int;
 
-    /**
-     * Set container
-     *
-     * @abstract
-     * @param  $container
-     * @return void
-     */
-    abstract public function initialise($container);
+    abstract public function initialise(ContainerInterface $container);
 
-    /**
-     * Set container
-     *
-     * @abstract
-     * @param  $container
-     * @return void
-     */
-    abstract public function getColumns($columns);
-
-    /**
-     * @param $class
-     * @return array
-     */
-    public function getClassColumns($class)
+    public function getColumns(Columns $columns): void
     {
-        return array();
     }
 
-    public function getFieldsMetadata($class)
+    public function getClassColumns(string $class): array
     {
-        return array();
+        return [];
     }
 
-    /**
-    * Return source hash string
-    * @abstract
-    */
-    abstract function getHash();
+    public function getFieldsMetadata(string $class): array
+    {
+        return [];
+    }
 
-    /**
-     * Delete one or more objects
-     *
-     * @abstract
-     * @param array $ids
-     * @return void
-     */
-    abstract public function delete(array $ids);
+    abstract public function getHash(): string;
+
+    abstract public function delete(array $ids): void;
 }

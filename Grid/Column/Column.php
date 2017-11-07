@@ -11,6 +11,9 @@
 
 namespace Sorien\DataGridBundle\Grid\Column;
 
+use Sorien\DataGridBundle\Grid\Row;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+
 abstract class Column
 {
     const DATA_CONJUNCTION = 0;
@@ -64,10 +67,10 @@ abstract class Column
      */
     public function __construct($params = null)
     {
-        $this->__initialize((array) $params);
+        $this->initialize((array) $params);
     }
 
-    public function __initialize(array $params)
+    public function initialize(array $params): void
     {
         $this->params = $params;
 
@@ -98,24 +101,13 @@ abstract class Column
         return '';
     }
 
-    /**
-     * Draw cell
-     *
-     * @param string $value
-     * @param Row $row
-     * @param $router
-     * @return string
-     */
-    public function renderCell($value, $row, $router)
+    public function renderCell($value, Row $row, UrlGeneratorInterface $urlGenerator)
     {
-        if (is_callable($this->callback))
-        {
-            return call_user_func($this->callback, $value, $row, $router);
+        if (is_callable($this->callback)) {
+            return call_user_func($this->callback, $value, $row, $urlGenerator);
         }
-        else
-        {
-            return $value;
-        }
+
+        return $value;
     }
 
     /**

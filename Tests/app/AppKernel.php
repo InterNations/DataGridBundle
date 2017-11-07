@@ -12,6 +12,7 @@ use Sorien\DataGridBundle\Grid\Column\SelectColumn;
 use Sorien\DataGridBundle\Grid\Column\TextColumn;
 use Sorien\DataGridBundle\Grid\Grid;
 use Sorien\DataGridBundle\Grid\Source\Entity;
+use Sorien\DataGridBundle\Grid\Source\Source;
 use Sorien\DataGridBundle\SorienDataGridBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -19,6 +20,7 @@ use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Bundle\WebServerBundle\WebServerBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\RouteCollectionBuilder;
@@ -73,23 +75,17 @@ class AppKernel extends Kernel
         );
     }
 
-    public function gridAction(): Response
+    public function gridAction(Request $request): Response
     {
         $container = $this->getContainer();
 
-        $this->createTestData($container);
+        if ($request->query->get('reset')) {
+            $this->createTestData($container);
+        }
 
-        $grid = new class (
-            $container,
-            new class(TestEntity::class) extends Entity
-            {
-                public function getColumns($columns)
-                {
-                }
-            }
-        ) extends Grid
+        $grid = new class ($container, new Entity(TestEntity::class)) extends Grid
         {
-            public function setSource($source)
+            public function setSource(Source $source): void
             {
                 $this->addColumn(
                     new RangeColumn(
@@ -162,7 +158,7 @@ class AppKernel extends Kernel
                 $this->addMassAction(new DeleteMassAction());
                 $this->addRowAction(new RowAction('Test', 'grid'));
 
-                return parent::setSource($source);
+                parent::setSource($source);
             }
 
             private function e(string $s): string {

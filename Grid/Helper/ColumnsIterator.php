@@ -11,22 +11,27 @@
 
 namespace Sorien\DataGridBundle\Grid\Helper;
 
-class ColumnsIterator extends \FilterIterator
+use FilterIterator;
+use Sorien\DataGridBundle\Grid\Column\Column;
+use Traversable;
+
+class ColumnsIterator extends FilterIterator
 {
     private $showOnlySourceColumns;
 
-    public function __construct(\Iterator $iterator, $showOnlySourceColumns)
+    public function __construct(Traversable $iterator, bool $showOnlySourceColumns)
     {
         parent::__construct($iterator);
         $this->showOnlySourceColumns = $showOnlySourceColumns;
     }
 
-    public function accept()
+    public function accept(): bool
     {
-        /**
-         * @var \Sorien\DataGridBundle\Grid\Column\Column $current
-         */
-        $current = $this->getInnerIterator()->current();
-        return $this->showOnlySourceColumns ? $current->isVisibleForSource() : true;
+        return $this->showOnlySourceColumns ? $this->getCurrentColumn()->isVisibleForSource() : true;
+    }
+
+    private function getCurrentColumn(): Column
+    {
+        return $this->getInnerIterator()->current();
     }
 }

@@ -12,52 +12,54 @@
 namespace Sorien\DataGridBundle\Grid\Column;
 
 use Sorien\DataGridBundle\Grid\Action\RowAction;
+use Sorien\DataGridBundle\Grid\Row;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Markup;
 
 class ActionsColumn extends Column
 {
     private $rowActions;
 
-    public function __construct($column, $title, array $rowActions = array(), array $params = array())
+    public function __construct(string $column, string $title, array $rowActions = [], array $params = [])
     {
         $this->rowActions = $rowActions;
         parent::__construct(
-            array_merge(
-                $params,
-                array('id' => $column, 'title' => $title, 'sortable' => false, 'source' => false)
-            )
+            array_merge($params, ['id' => $column, 'title' => $title, 'sortable' => false, 'source' => false])
         );
     }
 
-    public function renderCell($value, $row, $router)
+    public function renderCell($value, Row $row, UrlGeneratorInterface $urlGenerator)
     {
         $return = '';
+
         /* @var $action RowAction */
         foreach ($this->rowActions as $action) {
             $routeParameters = array_merge(
-                array($row->getPrimaryField() => $row->getPrimaryFieldValue()),
+                [$row->getPrimaryField() => $row->getPrimaryFieldValue()],
                 $action->getRouteParameters()
             );
 
             $route = $action->getRoute();
             if (is_callable($route)) {
-                $url = $route($router, $routeParameters, $row);
+                $url = $route($urlGenerator, $routeParameters, $row);
             } else {
-                $url = $router->generate($route, $routeParameters);
+                $url = $urlGenerator->generate($route, $routeParameters);
             }
 
-            $return .= "<a href='". $url;
+            $return .= "<a href='" . $url;
 
-            if ($action->getConfirm())
-                $return .= "' onclick=\"return confirm('".$action->getConfirmMessage()."');\"";
-            $return .= "' target='".$action->getTarget()."'";
+            if ($action->getConfirm()) {
+                $return .= "' onclick=\"return confirm('" . $action->getConfirmMessage() . "');\"";
+            }
+
+            $return .= "' target='" . $action->getTarget() . "'";
 
 
             foreach ($action->getAttributes() as $key => $value) {
                 $return .= ' ' . $key . '="' . $value . '"';
             }
 
-            $return .=">".$action->getTitle()."</a> ";
+            $return .= '>' . $action->getTitle() . '</a> ';
         }
 
         return new Markup($return, 'UTF-8');
@@ -72,7 +74,8 @@ class ActionsColumn extends Column
         return new Markup(sprintf('<input name="%s[submit]" type="submit" value="Filter"/>', $gridHash), 'UTF-8');
     }
 
-    public function setRowActions(array $rowActions) {
+    public function setRowActions(array $rowActions)
+    {
         $this->rowActions = $rowActions;
     }
 }

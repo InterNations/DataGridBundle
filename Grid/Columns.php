@@ -11,59 +11,36 @@
 
 namespace Sorien\DataGridBundle\Grid;
 
+use Countable;
 use InvalidArgumentException;
 use Sorien\DataGridBundle\Grid\Column\Column;
 use Sorien\DataGridBundle\Grid\Helper\ColumnsIterator;
 
-class Columns implements \IteratorAggregate, \Countable
+class Columns implements \IteratorAggregate, Countable
 {
-    /**
-     * @var \Sorien\DataGridBundle\Grid\Column\Column[]
-     */
+    /** @var Column[] */
     private $columns = [];
-    private $extensions;
 
-    public function getIterator($showOnlySourceColumns = false)
+    public function getIterator(bool $showOnlySourceColumns = false): ColumnsIterator
     {
         return new ColumnsIterator(new \ArrayIterator($this->columns), $showOnlySourceColumns);
     }
 
-    public function getPrimaryColumn()
+    public function getPrimaryColumn(): Column
     {
-        foreach ($this->columns as $column)
-        {
-            if ($column->isPrimary())
-            {
+        foreach ($this->columns as $column) {
+            if ($column->isPrimary()) {
                 return $column;
             }
         }
 
         throw new InvalidArgumentException('Primary column doesn\'t exists');
     }
-    public function addExtension($extension)
-    {
-        $this->extensions[strtolower($extension->getType())] = $extension;
-    }
 
-    public function hasExtensionForColumnType($type)
-    {
-        return isset($this->extensions[$type]);
-    }
-
-    public function getExtensionForColumnType($type)
-    {
-        return $this->extensions[$type];
-    }
-
-    // THE GOOD STUFF
-
-    /**
-     * Internal function
-     * @return string
-     */
-    public function getHash()
+    public function getHash(): string
     {
         $input = '';
+
         foreach ($this->columns as $column) {
             $input .= '__COLUMN:' . $column->getId();
         }
@@ -71,12 +48,7 @@ class Columns implements \IteratorAggregate, \Countable
         return hash('sha256', $input);
     }
 
-    /**
-     * @param Column $column
-     * @param int $position
-     * @return Grid
-     */
-    public function addColumn(Column $column, $position = null)
+    public function addColumn(Column $column, ?int $position = null): self
     {
         if ($position !== null) {
             $index = max(0, $position - 1);
@@ -90,12 +62,7 @@ class Columns implements \IteratorAggregate, \Countable
         return $this;
     }
 
-    /**
-     * @param string $columnId
-     * @throws InvalidArgumentException
-     * @return Column
-     */
-    public function getColumnById($columnId)
+    public function getColumnById(string $columnId): Column
     {
         $column = $this->getColumnByIdOrNull($columnId);
 
@@ -106,20 +73,12 @@ class Columns implements \IteratorAggregate, \Countable
         return $column;
     }
 
-    /**
-     * @param string $columnId
-     * @return bool
-     */
-    public function hasColumnById($columnId)
+    public function hasColumnById(string $columnId): bool
     {
         return (bool) $this->getColumnByIdOrNull($columnId);
     }
 
-    /**
-     * @param string $columnId
-     * @return Column|null
-     */
-    public function getColumnByIdOrNull($columnId)
+    public function getColumnByIdOrNull(string $columnId): ?Column
     {
         foreach ($this->columns as $column) {
             if ($column->getId() === $columnId) {
@@ -130,7 +89,7 @@ class Columns implements \IteratorAggregate, \Countable
         return null;
     }
 
-    public function count()
+    public function count(): int
     {
         return count($this->columns);
     }

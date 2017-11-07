@@ -11,6 +11,8 @@
 
 namespace Sorien\DataGridBundle\Grid\Column;
 
+use Sorien\DataGridBundle\Grid\Row;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Markup;
 
 class MassActionColumn extends Column
@@ -30,7 +32,7 @@ class MassActionColumn extends Column
         return '<input type="checkbox" class="grid-mass-selector" onclick="'.$gridHash.'_mark_visible(this.checked); return true;"/>';
     }
 
-    public function renderCell($value, $row, $router)
+    public function renderCell($value, Row $row, UrlGeneratorInterface $urlGenerator)
     {
         return new Markup(
             sprintf(

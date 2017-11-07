@@ -29,6 +29,8 @@
 
 </style>
 
+<a href="{{ app.request.pathinfo }}?reset=true">Reset data</a>
+
 {% block grid_column_str_value_template_cell %}
     <span style="background:lightgreen">{{ value }}</span>
 {% endblock %}

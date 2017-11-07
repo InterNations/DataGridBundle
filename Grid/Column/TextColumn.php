@@ -18,9 +18,9 @@ class TextColumn extends Column
 {
     private $inputType = 'text';
 
-    public function __initialize(array $params)
+    public function initialize(array $params): void
     {
-        parent::__initialize($params);
+        parent::initialize($params);
         $this->setInputType($this->getParam('inputType', 'text'));
     }
 
@@ -74,10 +74,5 @@ class TextColumn extends Column
         }
 
         return $this;
-    }
-
-    public function getType()
-    {
-        return 'text';
     }
 }

@@ -18,9 +18,9 @@ class RangeColumn extends Column
 {
     private $inputType = 'text';
 
-    public function __initialize(array $params)
+    public function initialize(array $params): void
     {
-        parent::__initialize($params);
+        parent::initialize($params);
         $this->setInputType($this->getParam('inputType', 'text'));
     }
 
@@ -134,10 +134,5 @@ class RangeColumn extends Column
     public function isFiltered()
     {
         return $this->data['from'] != '' || $this->data['to'] != '';
-    }
-
-    public function getType()
-    {
-        return 'range';
     }
 }

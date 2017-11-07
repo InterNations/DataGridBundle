@@ -11,17 +11,10 @@
 
 namespace Sorien\DataGridBundle\Grid\Column;
 
-use Sorien\DataGridBundle\Grid\Filter;
-
 class BlankColumn extends Column
 {
-    public function __initialize(array $params)
+    public function initialize(array $params): void
     {
-        parent::__initialize(array_merge(array('sortable' => false, 'filterable' => false, 'source' => false), $params));
-    }
-
-    public function getType()
-    {
-        return 'blank';
+        parent::initialize(array_merge(['sortable' => false, 'filterable' => false, 'source' => false], $params));
     }
 }

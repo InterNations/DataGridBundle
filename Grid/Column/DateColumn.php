@@ -11,15 +11,17 @@
 
 namespace Sorien\DataGridBundle\Grid\Column;
 
-use Sorien\DataGridBundle\Grid\Filter;
+use InvalidArgumentException;
+use Sorien\DataGridBundle\Grid\Row;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class DateColumn extends TextColumn
 {
     private $format;
 
-    public function __initialize(array $params)
+    public function initialize(array $params): void
     {
-        parent::__initialize($params);
+        parent::initialize($params);
         $this->format = $this->getParam('format', 'Y-m-d H:i:s');
     }
 
@@ -28,30 +30,20 @@ class DateColumn extends TextColumn
         return '';
     }
 
-    public function renderCell($value, $row, $router)
+    public function renderCell($value, Row $row, UrlGeneratorInterface $urlGenerator)
     {
-        if ($value != null)
-        {
-            if (is_string($value))
-            {
+        if ($value !== null) {
+            if (is_string($value)) {
                 $value = new \DateTime($value);
             }
 
-            if ($value instanceof \DateTime)
-            {
-                return parent::renderCell($value->format($this->format), $row, $router);
+            if ($value instanceof \DateTime) {
+                return parent::renderCell($value->format($this->format), $row, $urlGenerator);
             }
 
-            throw \InvalidArgumentException('Date Column value have to be DataTime object');
+            throw new InvalidArgumentException('Date Column value have to be DataTime object');
         }
-        else
-        {
-            return '';
-        }
-    }
 
-    public function getType()
-    {
-        return 'date';
+        return '';
     }
 }

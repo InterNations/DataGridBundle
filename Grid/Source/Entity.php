@@ -11,88 +11,44 @@
 
 namespace Sorien\DataGridBundle\Grid\Source;
 
+use Psr\Container\ContainerInterface;
 use Sorien\DataGridBundle\Grid\Column\Column;
+use Sorien\DataGridBundle\Grid\Columns;
+use Sorien\DataGridBundle\Grid\Helper\ColumnsIterator;
 use Sorien\DataGridBundle\Grid\Rows;
 use Sorien\DataGridBundle\Grid\Row;
-use Doctrine\ORM\Query;
-use Doctrine\ORM\Query\Expr\Orx;
-use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\ORM\Query\Expr\Comparison;
 
 class Entity extends Source
 {
-    /**
-     * @var \Doctrine\ORM\EntityManager
-     */
+    private const TABLE_ALIAS = '_a';
+    private const COUNT_ALIAS = '__count';
+
+    /** @var \Doctrine\ORM\EntityManager  */
     protected $manager;
 
-    /**
-     * @var \Doctrine\ORM\QueryBuilder
-     */
+    /** @var \Doctrine\ORM\QueryBuilder */
     private $query;
 
-    /**
-     * @var string e.g Vendor\Bundle\Entity\Page
-     */
-    private $class;
-
-    /**
-     * @var string e.g Cms:Page
-     */
     private $entityName;
 
-    /**
-     * @var \Sorien\DataGridBundle\Grid\Mapping\Metadata\Metadata
-     */
-    private $metadata;
+    private $joins = [];
 
-    /**
-     * @var \Doctrine\ORM\Mapping\ClassMetadata
-     */
-    private $ormMetadata;
-
-    /**
-     * @var array
-     */
-    private $joins;
-
-    const TABLE_ALIAS = '_a';
-    const COUNT_ALIAS = '__count';
-
-    /**
-     * @param string $entityName e.g Cms:Page
-     */
-    public function __construct($entityName)
+    public function __construct(string $entityName)
     {
         $this->entityName = $entityName;
-        $this->joins = array();
     }
 
-    public function initialise($container)
+    public function initialise(ContainerInterface $container): void
     {
         $this->manager = $container->get('doctrine')->getManager();
-        $this->ormMetadata = $this->manager->getClassMetadata($this->entityName);
-
-        $this->class = $this->ormMetadata->getReflectionClass()->name;
-
-        $mapping = $container->get('grid.mapping.manager');
-
-        /** todo autoregister mapping drivers with tag */
-        $mapping->addDriver($this, -1);
-        $this->metadata = $mapping->getMetadata($this->class);
     }
 
-    /**
-     * @param \Sorien\DataGridBundle\Grid\Column\Column $column
-     * @param boolean $withAlias
-     * @return string
-     */
-    private function getFieldName($column, $withAlias = true)
+    private function getFieldName(Column $column, bool $withAlias = true): string
     {
         $name = $column->getField();
 
         if (strpos($name, '.') === false) {
-            return self::TABLE_ALIAS.'.'.$name;
+            return self::TABLE_ALIAS . '.' . $name;
         }
 
         $parent = self::TABLE_ALIAS;
@@ -104,108 +60,82 @@ class Entity extends Source
                 $parent = '_' . $element;
                 $name = $element;
             } else {
-                $name .= '.'.$element;
+                $name .= '.' . $element;
             }
         }
 
 
         if ($withAlias) {
-            return '_' . $name.' as '.$column->getId();
+            return '_' . $name . ' as ' . $column->getId();
         }
 
 
-        return '_'.$name;
+        return '_' . $name;
     }
 
-    /**
-     * @param \Sorien\DataGridBundle\Grid\Columns $columns
-     * @return null
-     */
-    public function getColumns($columns)
+    private function normalizeOperator(string $operator): string
     {
-        foreach ($this->metadata->getColumnsFromMapping($columns) as $column)
-        {
-            $columns->addColumn($column);
+        return $operator === COLUMN::OPERATOR_REGEXP ? 'like': $operator;
+    }
+
+    private function normalizeValue(string $operator, string $value): string
+    {
+        if ($operator === COLUMN::OPERATOR_REGEXP) {
+            preg_match('@/\.\*([^/]+)\.\*/@', $value, $matches);
+
+            return '\'%' . $matches[1] . '%\'';
         }
+
+        return $value;
     }
 
-    private function normalizeOperator($operator)
+    public function execute(ColumnsIterator $columns, int $page = 0, int $limit = 0): Rows
     {
-        return ($operator == COLUMN::OPERATOR_REGEXP ? 'like' : $operator);
-    }
+        $this->query = $this->manager->createQueryBuilder();
+        $this->query->from($this->entityName, self::TABLE_ALIAS);
 
-    private function normalizeValue($operator, $value)
-    {
-        if ($operator == COLUMN::OPERATOR_REGEXP)
-        {
-            preg_match('/\/\.\*([^\/]+)\.\*\//s', $value, $matches);
-            return '\'%'.$matches[1].'%\'';
-        }
-        else
-        {
-            return $value;
-        }
-    }
-
-    /**
-     * @param $columns \Sorien\DataGridBundle\Grid\Column\Column[]
-     * @param $page int Page Number
-     * @param $limit int Rows Per Page
-     * @return \Sorien\DataGridBundle\Grid\Rows
-     */
-    public function execute($columns, $page = 0, $limit = 0)
-    {
-        $this->query = $this->manager->createQueryBuilder($this->class);
-        $this->query->from($this->class, self::TABLE_ALIAS);
-
-        $where = $this->query->expr()->andx();
+        $where = $this->query->expr()->andX();
 
         $parameterIndex = 0;
         $sorted = false;
-        foreach ($columns as $column)
-        {
+        foreach ($columns as $column) {
             $this->query->addSelect($this->getFieldName($column));
 
-            if ($column->isSorted() && !$column->isDefaultSort())
-            {
+            if ($column->isSorted() && !$column->isDefaultSort()) {
                 $this->query->orderBy($this->getFieldName($column, false), $column->getOrder());
                 $sorted = true;
-            }
-            elseif (!$sorted && $column->isSorted() && $column->isDefaultSort())
-            {
+            } elseif (!$sorted && $column->isSorted() && $column->isDefaultSort()) {
                 $this->query->orderBy($this->getFieldName($column, false), $column->getOrder());
             }
 
-            if ($column->isFiltered())
-            {
-                if($column->getFiltersConnection() === Column::DATA_CONJUNCTION)
-                {
-                    foreach ($column->getFilters() as $filter)
-                    {
+            if ($column->isFiltered()) {
+                if ($column->getFiltersConnection() === Column::DATA_CONJUNCTION) {
+                    foreach ($column->getFilters() as $filter) {
                         $operator = $this->normalizeOperator($filter->getOperator());
 
-                        $where->add($this->query->expr()->$operator(
-                            $this->getFieldName($column, false),
-                            '?' . $parameterIndex
-                        ));
+                        $where->add(
+                            $this->query->expr()->$operator(
+                                $this->getFieldName($column, false),
+                                '?' . $parameterIndex
+                            )
+                        );
 
                         $parameter = trim($this->normalizeValue($filter->getOperator(), $filter->getValue()), '\'');
 
                         $this->query->setParameter($parameterIndex++, $parameter);
                     }
-                }
-                elseif($column->getFiltersConnection() === Column::DATA_DISJUNCTION)
-                {
-                    $sub = $this->query->expr()->orx();
+                } elseif ($column->getFiltersConnection() === Column::DATA_DISJUNCTION) {
+                    $sub = $this->query->expr()->orX();
 
-                    foreach ($column->getFilters() as $filter)
-                    {
+                    foreach ($column->getFilters() as $filter) {
                         $operator = $this->normalizeOperator($filter->getOperator());
 
-                        $sub->add($this->query->expr()->$operator(
-                            $this->getFieldName($column, false),
-                            '?' . $parameterIndex
-                        ));
+                        $sub->add(
+                            $this->query->expr()->$operator(
+                                $this->getFieldName($column, false),
+                                '?' . $parameterIndex
+                            )
+                        );
 
                         $parameter = trim($this->normalizeValue($filter->getOperator(), $filter->getValue()), '\'');
 
@@ -217,18 +147,15 @@ class Entity extends Source
             }
         }
 
-        foreach ($this->joins as $alias => $field)
-        {
+        foreach ($this->joins as $alias => $field) {
             $this->query->leftJoin($field, $alias);
         }
 
-        if ($page > 0)
-        {
+        if ($page > 0) {
             $this->query->setFirstResult($page * $limit);
         }
 
-        if ($limit > 0)
-        {
+        if ($limit > 0) {
             $this->query->setMaxResults($limit);
         }
 
@@ -239,8 +166,7 @@ class Entity extends Source
         // hydrate result
         $result = new Rows();
 
-        foreach ($items as $item)
-        {
+        foreach ($items as $item) {
             $row = new Row();
 
             foreach ($item as $key => $value) {
@@ -254,8 +180,7 @@ class Entity extends Source
             }
 
             //call overridden prepareRow or associated closure
-            if (($modifiedRow = $this->prepareRow($row)) != null)
-            {
+            if (($modifiedRow = $this->prepareRow($row)) !== null) {
                 $result->addRow($modifiedRow);
             }
         }
@@ -263,7 +188,7 @@ class Entity extends Source
         return $result;
     }
 
-    public function getTotalCount($columns)
+    public function getTotalCount(Columns $columns): int
     {
         $query = $this->prepareCountQuery(clone $this->query);
 
@@ -273,70 +198,24 @@ class Entity extends Source
 
         $qb = $this->manager->createQueryBuilder();
 
-        $qb->select($qb->expr()->count(self::COUNT_ALIAS. '.' . $columns->getPrimaryColumn()->getField()));
+        $qb->select($qb->expr()->count(self::COUNT_ALIAS . '.' . $columns->getPrimaryColumn()->getField()));
         $qb->from($this->entityName, self::COUNT_ALIAS);
-        $qb->where($qb->expr()->in(self::COUNT_ALIAS. '.' . $columns->getPrimaryColumn()->getField(), $query->getDQL()));
+        $qb->where(
+            $qb->expr()->in(self::COUNT_ALIAS . '.' . $columns->getPrimaryColumn()->getField(), $query->getDQL())
+        );
 
         //copy existing parameters.
         $qb->setParameters($query->getParameters());
 
-        $result = $qb->getQuery()->getSingleResult();
-
-        return (int) $result[1];
+        return $qb->getQuery()->getSingleScalarResult();
     }
 
-    public function getFieldsMetadata($class)
-    {
-        $result = array();
-        foreach ($this->ormMetadata->getFieldNames() as $name)
-        {
-            $mapping = $this->ormMetadata->getFieldMapping($name);
-            $values = array('title' => $name, 'source' => true);
-
-            if (isset($mapping['fieldName']))
-            {
-                $values['field'] = $mapping['fieldName'];
-                $values['id'] = $mapping['fieldName'];
-            }
-
-            if (isset($mapping['id']) && $mapping['id'] == 'id')
-            {
-                $values['primary'] = true;
-            }
-
-            switch ($mapping['type'])
-            {
-                case 'integer':
-                case 'smallint':
-                case 'bigint':
-                case 'string':
-                case 'text':
-                case 'float':
-                case 'decimal':
-                    $values['type'] = 'text';
-                    break;
-                case 'boolean':
-                    $values['type'] = 'boolean';
-                    break;
-                case 'date':
-                case 'datetime':
-                case 'time':
-                    $values['type'] = 'date';
-                break;
-            }
-
-            $result[$name] = $values;
-        }
-
-        return $result;
-    }
-
-    public function getHash()
+    public function getHash(): string
     {
         return $this->entityName;
     }
 
-    public function delete(array $ids)
+    public function delete(array $ids): void
     {
         $repository = $this->manager->getRepository($this->entityName);
 
