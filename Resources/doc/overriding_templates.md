@@ -30,7 +30,7 @@ You can override blocks - `grid`, `grid_titles`, `grid_filters`, `grid_rows`, `g
 ```html
 <!-- MyProjectMyBundle::my_grid_template.html.twig -->
 
-{% extends 'SorienDataGridBundle::blocks.html.twig' %}
+{% extends '@SorienDataGrid/blocks.html.twig' %}
 {% block grid %}
     extended grid!
 {% endblock %}

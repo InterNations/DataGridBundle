@@ -23,7 +23,7 @@ use Twig\Extension\AbstractExtension;
 
 class DataGridExtension extends AbstractExtension
 {
-    const DEFAULT_TEMPLATE = 'SorienDataGridBundle::blocks.html.twig';
+    const DEFAULT_TEMPLATE = '@SorienDataGrid/blocks.html.twig';
 
     /** @var Template[] */
     private $templates = [];

@@ -137,6 +137,7 @@ class Grid
         unset($this->routeParameters['_template']);
         unset($this->routeParameters['_template_streamable']);
         unset($this->routeParameters['_template_default_vars']);
+        unset($this->routeParameters['_firewall_context']);
 
         if ($source) {
             $this->setSource($source);
