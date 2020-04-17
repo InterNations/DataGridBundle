@@ -291,10 +291,7 @@ class Grid
                     $this->container->get('http_kernel')->forward(
                         $action->getCallback(),
                         array_merge(
-                            [
-                                'primaryKeys' => array_keys($actionKeys),
-                                'allPrimaryKeys' => $actionAllKeys,
-                            ],
+                            ['primaryKeys' => array_keys($actionKeys), 'allPrimaryKeys' => $actionAllKeys],
                             $action->getParameters()
                         )
                     );
