@@ -2,7 +2,9 @@
     "name": "internations/datagrid-bundle",
     "type": "symfony-bundle",
     "description": "Simple datagrid bundle for Symfony",
-    "keywords": ["datagrid"],
+    "keywords": [
+        "datagrid"
+    ],
     "homepage": "https://github.com/InterNations/DataGridBundle",
     "authors": [
         {
@@ -15,20 +17,26 @@
         }
     ],
     "require": {
-        "php": ">=7.0.8",
-        "symfony/framework-bundle": "^3.3|^4.0",
-        "symfony/security": "^3.3|^4.0",
+        "php": ">=7.1",
+        "symfony/framework-bundle": "^4.4",
+        "symfony/security": "^4.4",
         "twig/twig": "^2.0"
     },
     "require-dev": {
         "internations/testing-component": ">=1",
         "phpunit/phpunit": ">4",
-        "symfony/symfony": "^3.3|^4.0",
-        "doctrine/doctrine-bundle": "^1.7",
+        "symfony/symfony": "^4.4",
+        "doctrine/doctrine-bundle": "^2.0",
         "doctrine/orm": "^2.5"
     },
     "autoload": {
-        "psr-0": { "Sorien\\DataGridBundle": "" }
+        "psr-4": {
+            "InterNations\\DataGridBundle\\": "src/InterNations"
+        }
     },
-    "target-dir": "Sorien/DataGridBundle"
+    "autoload-dev": {
+        "psr-4": {
+            "InterNations\\DataGridBundle\\Tests\\": "tests/InterNations"
+        }
+    }
 }

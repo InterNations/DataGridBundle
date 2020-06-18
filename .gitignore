@@ -1,7 +1,6 @@
-Tests/app/cache
+tests/InterNations/app/var
 /nbproject/
 /catalog.xml
 /vendor/
 /build/
-/var/
 /composer.lock
