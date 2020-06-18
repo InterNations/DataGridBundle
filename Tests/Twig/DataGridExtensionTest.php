@@ -11,7 +11,7 @@
 namespace Sorien\DataGridBundle\Tests\Twig;
 
 use InterNations\Component\Testing\AbstractTestCase;
-use PHPUnit_Framework_MockObject_MockObject as MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
 use Sorien\DataGridBundle\Grid\Column\Column;
 use Sorien\DataGridBundle\Grid\Column\TextColumn;
 use Sorien\DataGridBundle\Grid\Grid;
@@ -24,7 +24,9 @@ use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Twig\Environment;
 use Twig\Extension\CoreExtension;
+use Twig\Extension\EscaperExtension;
 use Twig\Template;
+use Twig\TemplateWrapper;
 
 class DataGridExtensionTest extends AbstractTestCase
 {
@@ -56,6 +58,13 @@ class DataGridExtensionTest extends AbstractTestCase
 
         $this->urlGenerator = $this->createMock(UrlGeneratorInterface::class);
         $this->environment = $this->createMock(Environment::class);
+        $this->environment
+            ->method('mergeGlobals')
+            ->willReturnArgument(0);
+        $this->environment
+            ->method('getFilter')
+            ->with('escape')
+            ->willReturn((new EscaperExtension())->getFilters()[0]);
         $this->grid = $this->createConfiguredMock(Grid::class, ['getHash' => 'hash', 'getId' => 'ID']);
         $this->column = new TextColumn();
         $this->row = new Row();
@@ -139,19 +148,23 @@ class DataGridExtensionTest extends AbstractTestCase
             );
         $template
             ->expects($this->once())
-            ->method('renderBlock')
+            ->method('displayBlock')
             ->with(
                 'grid_column_test_cell',
                 ['grid' => $this->grid, 'column' => $this->column, 'value' => 'value', 'row' => $this->row]
                 + $this->context
             )
-            ->willReturn('rendered');
+            ->willReturnCallback(
+                static function () {
+                    echo 'rendered';
+                }
+            );
 
         $this->environment
             ->expects($this->once())
-            ->method('loadTemplate')
+            ->method('load')
             ->with(DataGridExtension::DEFAULT_TEMPLATE)
-            ->willReturn($template);
+            ->willReturn(new TemplateWrapper($this->environment, $template));
 
         $this->row->setField('test', 'value');
         $this->column->setId('test');
@@ -184,7 +197,7 @@ class DataGridExtensionTest extends AbstractTestCase
 
         $this->environment
             ->expects($this->once())
-            ->method('loadTemplate')
+            ->method('load')
             ->with(DataGridExtension::DEFAULT_TEMPLATE)
             ->willReturn($template);
 
@@ -206,9 +219,9 @@ class DataGridExtensionTest extends AbstractTestCase
 
         $this->environment
             ->expects($this->once())
-            ->method('loadTemplate')
+            ->method('load')
             ->with(DataGridExtension::DEFAULT_TEMPLATE)
-            ->willReturn($template);
+            ->willReturn(new TemplateWrapper($this->environment, $template));
 
         $this->row->setField('test', 'value');
         $this->column->setId('test');
@@ -228,9 +241,9 @@ class DataGridExtensionTest extends AbstractTestCase
 
         $this->environment
             ->expects($this->once())
-            ->method('loadTemplate')
+            ->method('load')
             ->with(DataGridExtension::DEFAULT_TEMPLATE)
-            ->willReturn($template);
+            ->willReturn(new TemplateWrapper($this->environment, $template));
 
         $this->column->setCallback(function () { return null; });
 

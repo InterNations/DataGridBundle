@@ -31,7 +31,7 @@ class ActionsColumnTest extends AbstractTestCase
 
         $rendered = $column->renderFilter('hash');
         $this->assertNotSame('', $rendered);
-        $this->assertInternalType('string', $rendered);
+        $this->assertIsString($rendered);
     }
 }
 

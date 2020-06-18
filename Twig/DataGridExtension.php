@@ -11,13 +11,13 @@
 
 namespace Sorien\DataGridBundle\Twig;
 
-use InvalidArgumentException;
+use RuntimeException;
 use Sorien\DataGridBundle\Grid\Column\Column;
 use Sorien\DataGridBundle\Grid\Grid;
 use Sorien\DataGridBundle\Grid\Row;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Twig_Environment as Environment;
-use Twig\Template;
+use Twig\Environment;
+use Twig\TemplateWrapper;
 use Twig\TwigFunction;
 use Twig\Extension\AbstractExtension;
 
@@ -25,7 +25,7 @@ class DataGridExtension extends AbstractExtension
 {
     const DEFAULT_TEMPLATE = '@SorienDataGrid/blocks.html.twig';
 
-    /** @var Template[] */
+    /** @var TemplateWrapper[] */
     private $templates = [];
 
     /** @var string */
@@ -178,7 +178,7 @@ class DataGridExtension extends AbstractExtension
             );
         }
 
-        return twig_escape_filter($environment, $value, 'html', null, true);
+        return $environment->getFilter('escape')->getCallable()($environment, $value, 'html', null, true);
     }
 
     public function getGridFilter(Environment $environment, array $context, Column $column, Grid $grid): string
@@ -200,20 +200,29 @@ class DataGridExtension extends AbstractExtension
 
     private function renderBlock(Environment $environment, array $context, string $name, array $parameters): string
     {
-        foreach ($this->getTemplates($environment) as $template) {
+        $templates = $this->getTemplates($environment, $context);
+
+        foreach ($templates as $template) {
             if ($template->hasBlock($name, $context)) {
                 return $template->renderBlock($name, array_merge($context, $parameters));
             }
         }
 
-        throw new InvalidArgumentException(
-            sprintf('Block "%s" doesn’t exist in grid template "%s".', $name, $this->theme)
+        throw new RuntimeException(
+            sprintf(
+                'Block "%s" doesn’t exist in any of the grid template "%s".',
+                $name,
+                array_map(
+                    static function (TemplateWrapper $templateWrapper) { return $templateWrapper->getTemplateName(); },
+                    $templates
+                )
+            )
         );
     }
 
     private function hasBlock(Environment $environment, array $context, string $name): bool
     {
-        foreach ($this->getTemplates($environment) as $template) {
+        foreach ($this->getTemplates($environment, $context) as $template) {
             if ($template->hasBlock($name, $context)) {
                 return true;
             }
@@ -222,27 +231,27 @@ class DataGridExtension extends AbstractExtension
         return false;
     }
 
-    /** @return Template[] */
-    private function getTemplates(Environment $environment): array
+    /** @return TemplateWrapper[] */
+    private function getTemplates(Environment $environment, array $context): array
     {
         if (empty($this->templates)) {
             //get template name
-            if ($this->theme instanceof Template) {
+            if ($this->theme instanceof TemplateWrapper) {
                 $this->templates[] = $this->theme;
-                $this->templates[] = $environment->loadTemplate($this::DEFAULT_TEMPLATE);
+                $this->templates[] = $environment->load($this::DEFAULT_TEMPLATE);
             } elseif (is_string($this->theme)) {
-                $template = $environment->loadTemplate($this->theme);
-                while ($template instanceof Template) {
+                $template = $environment->load($this->theme);
+                while ($template instanceof TemplateWrapper) {
                     $this->templates[] = $template;
-                    $template = $template->getParent([]);
+                    $template = $template->unwrap()->getParent($context);
                 }
 
-                $this->templates[] = $environment->loadTemplate($this->theme);
-                $this->templates[] = $environment->loadTemplate($this::DEFAULT_TEMPLATE);
+                $this->templates[] = $environment->load($this->theme);
+                $this->templates[] = $environment->load($this::DEFAULT_TEMPLATE);
             } elseif ($this->theme === null) {
-                $this->templates[] = $environment->loadTemplate($this::DEFAULT_TEMPLATE);
+                $this->templates[] = $environment->load($this::DEFAULT_TEMPLATE);
             } else {
-                throw new \Exception('Unable to load template');
+                throw new RuntimeException(sprintf('Unable to load template "%s"', $this->theme));
             }
         }
 

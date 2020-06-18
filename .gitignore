@@ -3,3 +3,5 @@ Tests/app/cache
 /catalog.xml
 /vendor/
 /build/
+/var/
+/composer.lock

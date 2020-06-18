@@ -10,7 +10,7 @@
 namespace Sorien\DataGridBundle\Tests\Grid;
 
 use InterNations\Component\Testing\AbstractTestCase;
-use PHPUnit_Framework_MockObject_MockObject as MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
 use Sorien\DataGridBundle\Grid\Column\BooleanColumn;
 use Sorien\DataGridBundle\Grid\Column\Column;
 use Sorien\DataGridBundle\Grid\Column\RangeColumn;

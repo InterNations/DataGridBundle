@@ -1,20 +1,24 @@
 {
-    "name": "sorien/datagrid-bundle",
+    "name": "internations/datagrid-bundle",
     "type": "symfony-bundle",
-    "description": "datagrid bundle for symfony2",
+    "description": "Simple datagrid bundle for Symfony",
     "keywords": ["datagrid"],
-    "homepage": "https://github.com/S0RIEN/DataGridBundle",
+    "homepage": "https://github.com/InterNations/DataGridBundle",
     "authors": [
         {
             "name": "Stanislav Turza",
             "email": "stanislav.turza@gmail.com"
+        },
+        {
+            "name": "Lars Strojny",
+            "email": "lars.strojny@internations.org"
         }
     ],
     "require": {
         "php": ">=7.0.8",
         "symfony/framework-bundle": "^3.3|^4.0",
         "symfony/security": "^3.3|^4.0",
-        "twig/twig": "~1.34|~2.4"
+        "twig/twig": "^2.0"
     },
     "require-dev": {
         "internations/testing-component": ">=1",

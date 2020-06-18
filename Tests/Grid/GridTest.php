@@ -17,7 +17,7 @@ use Sorien\DataGridBundle\Grid\Columns;
 use Sorien\DataGridBundle\Grid\Grid;
 use Sorien\DataGridBundle\Grid\Source\Source;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use PHPUnit_Framework_MockObject_MockObject as MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -96,7 +96,7 @@ class GridTest extends AbstractTestCase
         $columns
             ->expects($this->once())
             ->method('addColumn')
-            ->with($column, $this->identicalTo(null));
+            ->with($column, null);
 
         $this->grid->addColumn($column);
     }

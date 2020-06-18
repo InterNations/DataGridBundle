@@ -56,14 +56,14 @@
 {# ---------------------------------------------------- grid_rows --------------------------------------------------- #}
 {% block grid_rows %}
     {% for row in grid.rows %}
-    {% spaceless %}
+    {% apply spaceless %}
     <tr{% if row.color != '' %} style="background-color:{{row.color}};"{% endif %} class="grid-row-cells">
     {% for column in grid.columns %}
         {% if (column.visible )%}
             <td class="grid-column-{{ column.id }}{% if column.align != 'left'%} align-{{column.align}}{% endif %}">{{ grid_cell(column, row, grid) }}</td>
         {% endif %}
     {% endfor %}
-    {% endspaceless %}
+    {% endapply %}
     </tr>
     {% endfor %}
 {% endblock %}
@@ -71,11 +71,11 @@
 {% block grid_pager %}
 <div class="pager">
     {{ 'Page'|trans }}
-    {% spaceless %}
+    {% apply spaceless %}
     <input type="button" class="prev" {% if grid.page <= 0 %}disabled="disabled"{% endif %} value="<" onclick="window.location.href='{{grid_pagination_url(grid, grid.page-1)}}';return false;"/>
     <input type="text" value="{{grid.page+1}}" size="2" onkeypress="if (event.which === 13){window.location.href='{{grid_pagination_url(grid)}}'+(parseInt(this.value)-1);return false}"/>
     <input type="button" value=">" class="next" {% if grid.page >= grid.pagecount-1 %}disabled="disabled"{% endif %} onclick="window.location.href='{{grid_pagination_url(grid, grid.page+1)}}';return false;"/> {{ 'of %count%'|trans({'%count%': grid.pagecount}) }}
-    {% endspaceless %}
+    {% endapply %}
     {{ ', Display'|trans }}
     <select onchange="window.location.href='{{grid_limit_url(grid)}}'+this.value">
     {% for key, value in grid.limits %}
@@ -96,7 +96,7 @@
     <a href="#" onclick="return {{grid.hash}}_mark_all(true);">{{ 'Select all'|trans }}</a> |
     <a href="#" onclick="return {{grid.hash}}_mark_all(false);">{{ 'Deselect all'|trans }}</a>
     <span class="mass-actions-selected" id="{{grid.hash}}_mass_action_selected"></span>
-    {% spaceless %}
+    {% apply spaceless %}
     <div style="float:right">
         {{ 'Action'|trans }}
         <input type="hidden" id="{{grid.hash}}_mass_action_all" name="{{grid.hash}}[{{ constant('Sorien\\DataGridBundle\\Grid\\Grid::REQUEST_QUERY_MASS_ACTION_ALL_KEYS_SELECTED') }}]" value="0"/>
@@ -119,7 +119,7 @@
         </select>
         <input type="submit"  value="{{ 'Submit Action'|trans }}"/>
     </div>
-    {% endspaceless %}
+    {% endapply %}
     {{ block('grid_scripts') }}
 </div>
 {% endblock %}
