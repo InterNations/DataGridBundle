@@ -10,10 +10,10 @@
 
 namespace InterNations\DataGridBundle\Tests\Grid\Column;
 
-use InterNations\Component\Testing\AbstractTestCase;
 use InterNations\DataGridBundle\Grid\Column\DateColumn;
+use PHPUnit\Framework\TestCase;
 
-class DateColumnTest extends AbstractTestCase
+class DateColumnTest extends TestCase
 {
     public function testReturnsEmptyStringForRenderFilter(): void
     {

@@ -10,13 +10,13 @@
 
 namespace InterNations\DataGridBundle\Tests\Twig;
 
-use InterNations\Component\Testing\AbstractTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 use InterNations\DataGridBundle\Grid\Column\Column;
 use InterNations\DataGridBundle\Grid\Column\TextColumn;
 use InterNations\DataGridBundle\Grid\Grid;
 use InterNations\DataGridBundle\Grid\Row;
 use InterNations\DataGridBundle\Twig\DataGridExtension;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RequestContext;
@@ -28,7 +28,7 @@ use Twig\Extension\EscaperExtension;
 use Twig\Template;
 use Twig\TemplateWrapper;
 
-class DataGridExtensionTest extends AbstractTestCase
+class DataGridExtensionTest extends TestCase
 {
     /** @var UrlGeneratorInterface|MockObject */
     private $urlGenerator;

@@ -9,7 +9,6 @@
  */
 namespace InterNations\DataGridBundle\Tests\Grid;
 
-use InterNations\Component\Testing\AbstractTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 use InterNations\DataGridBundle\Grid\Column\BooleanColumn;
 use InterNations\DataGridBundle\Grid\Column\Column;
@@ -17,8 +16,9 @@ use InterNations\DataGridBundle\Grid\Column\RangeColumn;
 use InterNations\DataGridBundle\Grid\Column\SelectColumn;
 use InterNations\DataGridBundle\Grid\Column\TextColumn;
 use InterNations\DataGridBundle\Grid\Columns;
+use PHPUnit\Framework\TestCase;
 
-class ColumnsTest extends AbstractTestCase
+class ColumnsTest extends TestCase
 {
     /** @var Columns */
     private $columns;
@@ -28,15 +28,11 @@ class ColumnsTest extends AbstractTestCase
 
     public function setUp()
     {
-        $this->column = $this->createMock(Column::class);
-        $this->column
-            ->expects($this->any())
-            ->method('getId')
-            ->willReturn('column');
+        $this->column = $this->createConfiguredMock(Column::class, ['getId' => 'column']);
         $this->columns = new Columns();
     }
 
-    public function testAddingColumns()
+    public function testAddingColumns(): void
     {
         $textColumn = new TextColumn(['id' => 'text']);
         $rangeColumn = new RangeColumn(['id' => 'range']);
@@ -67,7 +63,7 @@ class ColumnsTest extends AbstractTestCase
         );
     }
 
-    public function testAccessingColumns()
+    public function testAccessingColumns(): void
     {
         $this->assertFalse($this->columns->hasColumnById('column'));
         $this->assertNull($this->columns->getColumnByIdOrNull('column'));
@@ -81,7 +77,7 @@ class ColumnsTest extends AbstractTestCase
         $this->assertSame($this->column, $this->columns->getColumnById('undefinedColumn'));
     }
 
-    public function testGetHash()
+    public function testGetHash(): void
     {
         $this->assertSame(
             'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',

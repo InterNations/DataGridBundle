@@ -10,10 +10,10 @@
 
 namespace InterNations\DataGridBundle\Tests\Grid\Column;
 
-use InterNations\Component\Testing\AbstractTestCase;
 use InterNations\DataGridBundle\Grid\Column\SelectColumn;
+use PHPUnit\Framework\TestCase;
 
-class SelectColumnTest extends AbstractTestCase
+class SelectColumnTest extends TestCase
 {
     public function testReturnsEmptyStringForRenderFilter(): void
     {

@@ -10,11 +10,10 @@
 
 namespace InterNations\DataGridBundle\Tests\Grid\Column;
 
-use InterNations\Component\Testing\AbstractTestCase;
-use InterNations\DataGridBundle\Grid\Column\ActionsColumn;
 use InterNations\DataGridBundle\Grid\Column\MassActionColumn;
+use PHPUnit\Framework\TestCase;
 
-class MassActionColumnTest extends AbstractTestCase
+class MassActionColumnTest extends TestCase
 {
     public function testMassActionsColumnRendersFilter(): void
     {

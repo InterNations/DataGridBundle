@@ -112,7 +112,7 @@ class Grid
      */
     private $showTitles;
 
-    public function __construct(ContainerInterface $container, Source $source = null)
+    public function __construct(ContainerInterface $container, Source $source = null, Columns $columns = null)
     {
         $this->container = $container;
 
@@ -126,7 +126,7 @@ class Grid
         $this->page = 0;
         $this->showTitles = $this->showFilters = true;
 
-        $this->columns = new Columns();
+        $this->columns = $columns ?? new Columns();
         $this->massActions = [];
         $this->rowActions = [];
 

@@ -26,7 +26,6 @@
         "twig/twig": "^2.0"
     },
     "require-dev": {
-        "internations/testing-component": ">=1",
         "phpunit/phpunit": ">4",
         "symfony/symfony": "^4.4",
         "doctrine/doctrine-bundle": "^2.0",

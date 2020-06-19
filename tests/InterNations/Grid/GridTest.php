@@ -10,12 +10,10 @@
 
 namespace InterNations\DataGridBundle\Tests\Grid;
 
-use InterNations\Component\Testing\AbstractTestCase;
-use InterNations\Component\Testing\AccessTrait;
 use InterNations\DataGridBundle\Grid\Column\TextColumn;
 use InterNations\DataGridBundle\Grid\Columns;
 use InterNations\DataGridBundle\Grid\Grid;
-use InterNations\DataGridBundle\Grid\Source\Source;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,13 +21,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class GridTest extends AbstractTestCase
+class GridTest extends TestCase
 {
-    use AccessTrait;
-
-    /** @var Grid */
-    private $grid;
-
     /** @var ContainerInterface|MockObject */
     private $container;
 
@@ -38,9 +31,6 @@ class GridTest extends AbstractTestCase
 
     /** @var Request */
     private $request;
-
-    /** @var Source|MockObject */
-    private $source;
 
     /** @var UrlGeneratorInterface|MockObject */
     private $urlGenerator;
@@ -55,17 +45,12 @@ class GridTest extends AbstractTestCase
         $this->request = new Request();
         $this->request->attributes->set('_route', $this->route);
         $this->request->setSession($this->session);
-        $requestStack = $this->createMock(RequestStack::class);
-        $requestStack
-            ->expects($this->any())
-            ->method('getMasterRequest')
-            ->willReturn($this->request);
+        $requestStack = $this->createConfiguredMock(RequestStack::class, ['getMasterRequest' => $this->request]);
 
         $this->urlGenerator = $this->createMock(UrlGeneratorInterface::class);
 
         $this->container = $this->createMock(ContainerInterface::class);
         $this->container
-            ->expects($this->any())
             ->method('get')
             ->willReturnMap(
                 [
@@ -73,23 +58,21 @@ class GridTest extends AbstractTestCase
                     ['router', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $this->urlGenerator]
                 ]
             );
-
-        $this->source = $this->createMock(Source::class);
-
-        $this->grid = new Grid($this->container, $this->source);
     }
 
-    public function testAddColumn()
+    public function testAddColumn(): void
     {
-        $this->assertCount(0, $this->grid->getColumns());
-        $this->grid->addColumn(new TextColumn());
-        $this->assertCount(1, $this->grid->getColumns());
+        $grid = new Grid($this->container);
+
+        $this->assertCount(0, $grid->getColumns());
+        $grid->addColumn(new TextColumn());
+        $this->assertCount(1, $grid->getColumns());
     }
 
-    public function testAddColumnDefaultIsNull()
+    public function testAddColumnDefaultIsNull(): void
     {
         $columns = $this->createMock(Columns::class);
-        $this->setNonPublicProperty($this->grid, 'columns', $columns);
+        $grid = new Grid($this->container, null, $columns);
 
         $column = new TextColumn();
 
@@ -98,6 +81,6 @@ class GridTest extends AbstractTestCase
             ->method('addColumn')
             ->with($column, null);
 
-        $this->grid->addColumn($column);
+        $grid->addColumn($column);
     }
 }
