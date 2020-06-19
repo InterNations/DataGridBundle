@@ -25,7 +25,7 @@ abstract class Column
     const OPERATOR_LTE  = 'lte';
     const OPERATOR_GT   = 'gt';
     const OPERATOR_GTE  = 'gte';
-    const OPERATOR_REGEXP = 'req';
+    const OPERATOR_SUBSTRING = 'substring';
 
     const ALIGN_LEFT = 'left';
     const ALIGN_RIGHT = 'right';

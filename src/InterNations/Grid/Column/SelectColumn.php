@@ -110,7 +110,7 @@ class SelectColumn extends Column
         }
 
         foreach ($values as $value) {
-            $filters[] = new Filter(self::OPERATOR_EQ, '\'' . $value . '\'');
+            $filters[] = new Filter(self::OPERATOR_EQ, $value);
         }
 
         return $filters;

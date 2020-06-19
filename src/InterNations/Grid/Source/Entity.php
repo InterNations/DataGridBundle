@@ -11,31 +11,44 @@
 
 namespace InterNations\DataGridBundle\Grid\Source;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use Psr\Container\ContainerInterface;
 use InterNations\DataGridBundle\Grid\Column\Column;
 use InterNations\DataGridBundle\Grid\Columns;
 use InterNations\DataGridBundle\Grid\Helper\ColumnsIterator;
-use InterNations\DataGridBundle\Grid\Rows;
 use InterNations\DataGridBundle\Grid\Row;
+use InterNations\DataGridBundle\Grid\Rows;
+use RuntimeException;
+use function array_shift;
+use function count;
+use function explode;
+use function preg_match;
+use function sprintf;
+use function strpos;
+use function trim;
 
 class Entity extends Source
 {
     public const TABLE_ALIAS = '_a';
     public const COUNT_ALIAS = '__count';
 
-    /** @var \Doctrine\ORM\EntityManager  */
+    /** @var EntityManagerInterface */
     protected $manager;
 
-    /** @var \Doctrine\ORM\QueryBuilder */
-    private $query;
+    /** @var QueryBuilder */
+    protected $query;
 
-    private $entityName;
+    /** @var string e.g Cms:Page */
+    protected $entityName;
 
-    private $joins = [];
+    /** @var array */
+    private $joins;
 
     public function __construct(string $entityName)
     {
         $this->entityName = $entityName;
+        $this->joins = [];
     }
 
     public function initialise(ContainerInterface $container): void
@@ -43,7 +56,7 @@ class Entity extends Source
         $this->manager = $container->get('doctrine')->getManager();
     }
 
-    private function getFieldName(Column $column, bool $withAlias = true): string
+    protected function getFieldName($column, $withAlias = true): string
     {
         $name = $column->getField();
 
@@ -64,26 +77,24 @@ class Entity extends Source
             }
         }
 
-
         if ($withAlias) {
             return '_' . $name . ' as ' . $column->getId();
         }
 
-
         return '_' . $name;
     }
 
-    private function normalizeOperator(string $operator): string
+    private function normalizeOperator($operator)
     {
-        return $operator === COLUMN::OPERATOR_REGEXP ? 'like': $operator;
+        return $operator === Column::OPERATOR_SUBSTRING ? 'like' : $operator;
     }
 
     private function normalizeValue(string $operator, string $value): string
     {
-        if ($operator === COLUMN::OPERATOR_REGEXP) {
-            preg_match('@/\.\*([^/]+)\.\*/@', $value, $matches);
+        $value = trim($value);
 
-            return '\'%' . $matches[1] . '%\'';
+        if ($operator === Column::OPERATOR_SUBSTRING) {
+            return '%' . $value . '%';
         }
 
         return $value;
@@ -94,10 +105,11 @@ class Entity extends Source
         $this->query = $this->manager->createQueryBuilder();
         $this->query->from($this->entityName, self::TABLE_ALIAS);
 
-        $where = $this->query->expr()->andX();
+        $where = $this->query->expr()->andx();
 
         $parameterIndex = 0;
         $sorted = false;
+
         foreach ($columns as $column) {
             $this->query->addSelect($this->getFieldName($column));
 
@@ -114,30 +126,30 @@ class Entity extends Source
                         $operator = $this->normalizeOperator($filter->getOperator());
 
                         $where->add(
-                            $this->query->expr()->$operator(
+                            $this->query->expr()->{$operator}(
                                 $this->getFieldName($column, false),
                                 '?' . $parameterIndex
                             )
                         );
 
-                        $parameter = trim($this->normalizeValue($filter->getOperator(), $filter->getValue()), '\'');
+                        $parameter = $this->normalizeValue($filter->getOperator(), $filter->getValue());
 
                         $this->query->setParameter($parameterIndex++, $parameter);
                     }
                 } elseif ($column->getFiltersConnection() === Column::DATA_DISJUNCTION) {
-                    $sub = $this->query->expr()->orX();
+                    $sub = $this->query->expr()->orx();
 
                     foreach ($column->getFilters() as $filter) {
                         $operator = $this->normalizeOperator($filter->getOperator());
 
                         $sub->add(
-                            $this->query->expr()->$operator(
+                            $this->query->expr()->{$operator}(
                                 $this->getFieldName($column, false),
                                 '?' . $parameterIndex
                             )
                         );
 
-                        $parameter = trim($this->normalizeValue($filter->getOperator(), $filter->getValue()), '\'');
+                        $parameter = $this->normalizeValue($filter->getOperator(), $filter->getValue());
 
                         $this->query->setParameter($parameterIndex++, $parameter);
                     }
@@ -179,8 +191,9 @@ class Entity extends Source
                 }
             }
 
-            //call overridden prepareRow or associated closure
-            if (($modifiedRow = $this->prepareRow($row)) !== null) {
+            // Call overridden prepareRow or associated closure
+            $modifiedRow = $this->prepareRow($row);
+            if ($modifiedRow !== null) {
                 $result->addRow($modifiedRow);
             }
         }
@@ -191,6 +204,17 @@ class Entity extends Source
     public function getTotalCount(Columns $columns): int
     {
         $query = $this->prepareCountQuery(clone $this->query);
+
+        if (!$query->getDQLPart('groupBy')) {
+            // no need for a subquery - do a simple count on a primary field
+            return (int) $query
+                ->resetDQLPart('orderBy')
+                ->setMaxResults(null)
+                ->setFirstResult(null)
+                ->select($query->expr()->countDistinct(self::TABLE_ALIAS . '.' . $columns->getPrimaryColumn()->getField()))
+                ->getQuery()
+                ->getSingleScalarResult();
+        }
 
         $query->select($this->getFieldName($columns->getPrimaryColumn()));
         $query->setFirstResult(null);
@@ -204,7 +228,6 @@ class Entity extends Source
             $qb->expr()->in(self::COUNT_ALIAS . '.' . $columns->getPrimaryColumn()->getField(), $query->getDQL())
         );
 
-        //copy existing parameters.
         $qb->setParameters($query->getParameters());
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -223,7 +246,7 @@ class Entity extends Source
             $object = $repository->find($id);
 
             if (!$object) {
-                throw new \Exception(sprintf('No %s found for id %s', $this->entityName, $id));
+                throw new RuntimeException(sprintf('No %s found for id %s', $this->entityName, $id));
             }
 
             $this->manager->remove($object);

@@ -63,7 +63,7 @@ class TextColumn extends Column
 
     public function getFilters()
     {
-        return array(new Filter(self::OPERATOR_REGEXP, '/.*'.$this->data.'.*/i'));
+        return array(new Filter(self::OPERATOR_SUBSTRING, $this->data));
     }
 
     public function setData($data)
