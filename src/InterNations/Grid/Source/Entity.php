@@ -20,8 +20,8 @@ use InterNations\DataGridBundle\Grid\Row;
 
 class Entity extends Source
 {
-    private const TABLE_ALIAS = '_a';
-    private const COUNT_ALIAS = '__count';
+    public const TABLE_ALIAS = '_a';
+    public const COUNT_ALIAS = '__count';
 
     /** @var \Doctrine\ORM\EntityManager  */
     protected $manager;
