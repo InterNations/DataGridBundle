@@ -12,7 +12,6 @@
 namespace InterNations\DataGridBundle\Grid;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 class GridManager implements \IteratorAggregate, \Countable
 {
@@ -107,7 +106,7 @@ class GridManager implements \IteratorAggregate, \Countable
                 return $parameters;
             }
             else {
-                $response = new Response();
+                $response = $response ?? new Response();
                 $response->setContent($this->container->get('twig')->render($view, $parameters));
                 return $response;
             }
