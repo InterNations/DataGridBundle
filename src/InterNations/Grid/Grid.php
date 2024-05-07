@@ -565,7 +565,7 @@ class Grid
         if (!$view) {
             return $parameters;
         } else {
-            $response = $response ?? new Response();
+            $response ??= new Response();
             $response->setContent($this->container->get('twig')->render($view, $parameters));
             return $response;
         }
