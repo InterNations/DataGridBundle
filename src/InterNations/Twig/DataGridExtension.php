@@ -20,6 +20,7 @@ use Twig\Environment;
 use Twig\TemplateWrapper;
 use Twig\TwigFunction;
 use Twig\Extension\AbstractExtension;
+use Twig\Runtime\EscaperRuntime;
 
 class DataGridExtension extends AbstractExtension
 {
@@ -178,7 +179,8 @@ class DataGridExtension extends AbstractExtension
             );
         }
 
-        return $environment->getFilter('escape')->getCallable()($environment, $value, 'html', null, true);
+        $escaper = $environment->getRuntime(EscaperRuntime::class);
+        return $escaper->escape($value, 'html', null,true);
     }
 
     public function getGridFilter(Environment $environment, array $context, Column $column, Grid $grid): string
