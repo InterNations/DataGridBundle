@@ -5,3 +5,4 @@ tests/InterNations/app/var
 /vendor/
 /build/
 /composer.lock
+.phpunit.result.cache
