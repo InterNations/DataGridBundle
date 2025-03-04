@@ -21,7 +21,7 @@ class MassActionColumnTest extends TestCase
 
         $rendered = $column->renderFilter('hash');
         $this->assertNotSame('', $rendered);
-        $this->assertInternalType('string', $rendered);
+        $this->assertIsString($rendered);
     }
 }
 

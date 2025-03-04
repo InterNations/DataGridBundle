@@ -17,6 +17,7 @@ use InterNations\DataGridBundle\Grid\Grid;
 use InterNations\DataGridBundle\Grid\Row;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
+use Twig\Runtime\EscaperRuntime;
 use Twig\TemplateWrapper;
 use Twig\TwigFunction;
 use Twig\Extension\AbstractExtension;
@@ -178,7 +179,7 @@ class DataGridExtension extends AbstractExtension
             );
         }
 
-        return $environment->getFilter('escape')->getCallable()($environment, $value, 'html', null, true);
+        return $environment->getRuntime(EscaperRuntime::class)->escape($value, 'html', null, true);
     }
 
     public function getGridFilter(Environment $environment, array $context, Column $column, Grid $grid): string
