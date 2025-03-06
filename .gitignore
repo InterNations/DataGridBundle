@@ -1,6 +1,8 @@
+.idea
 tests/InterNations/app/var
 /nbproject/
 /catalog.xml
 /vendor/
 /build/
 /composer.lock
+.phpunit.result.cache

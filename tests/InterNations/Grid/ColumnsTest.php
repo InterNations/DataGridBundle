@@ -26,7 +26,7 @@ class ColumnsTest extends TestCase
     /** @var Column|MockObject */
     private $column;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->column = $this->createConfiguredMock(Column::class, ['getId' => 'column']);
         $this->columns = new Columns();

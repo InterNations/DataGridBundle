@@ -38,7 +38,7 @@ class GridTest extends TestCase
     /** @var string */
     private $route = 'grid_route';
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->session = $this->createMock(SessionInterface::class);
 
